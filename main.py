@@ -18,6 +18,8 @@ from copy import deepcopy
 # from post_proc import *
 from tiles import *
 from qlue_func import *
+from qlue_func_mod import calculateLocalDensity_classic_mod
+from q_grover import *
 
 if __name__ == "__main__":
 
@@ -76,11 +78,16 @@ if __name__ == "__main__":
     
     # dataset['tileIdx'] = tilesList
     # print(tileDict)
+    # s = dec_to_qubit(3, dataset)
+    # print(s)
+    # print(qubit_to_dec(s, dataset))
 
+    # localDensities = calculateLocalDensity_classic(dataset, tileDict, dc)
+    # dataset['rho'] = localDensities
+    # print(dataset.head())
 
-    localDensities = calculateLocalDensity_classic(dataset, tileDict, dc)
-    dataset['rho'] = localDensities
-    print(dataset.head())
+    calculateLocalDensity_classic_mod(dataset, tileDict, dc)
+    # print(pauli_gen("I", 0, 2))
 
 
 ####### TODOLIST
