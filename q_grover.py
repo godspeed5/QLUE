@@ -105,7 +105,6 @@ def l_sup(all_points_ordered, input_form = "dec", output_form = "qubit"):
         return all_tracksters
     elif output_form == "qubit":
         # print([dec_to_qubit(trackster, all_points_ordered).shape for trackster in all_tracksters])
-        print(len(all_tracksters), len(all_points_ordered))
         return np.sum([dec_to_qubit(trackster, all_points_ordered) for trackster in all_tracksters])/np.sqrt(len(all_tracksters))
 
 def remove_array_from_list(full_list, list_to_remove):

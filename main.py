@@ -18,7 +18,7 @@ from copy import deepcopy
 # from post_proc import *
 from tiles import *
 from qlue_func import *
-from qlue_func_mod import calculateLocalDensity_classic_mod
+from qlue_func_mod import calculateLocalDensity_classic_mod, calculateNearestHigher_classic_mod
 from q_grover import *
 
 if __name__ == "__main__":
@@ -26,12 +26,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir', type=str, default='datasets/')
     parser.add_argument('--sortpar', type=str, default='weight', help='weight or rho')
+    parser.add_argument('--cq', type=str, default='ch', help='classical or quantum or cheating')
 
     args = parser.parse_args()
     
     # Set directory
     data_dir = args.dir
     sortpar = args.sortpar
+    cq = args.cq
 
     # Import the data for QLUE
     qlue_data = pd.read_csv(data_dir+ "aniso_1000_20.00_25.00_2.00.csv")
@@ -60,13 +62,13 @@ if __name__ == "__main__":
     weight = selected_data['weight'].values
 
     trueDensity = selected_data['rho'].values
-    trueNh = selected_data['nh'].values
+    trueNh = selected_data['nh'].values.astype(int)
     trueDelta = selected_data['delta'].values
     trueisSeed = selected_data['isSeed'].values
     trueClusterId = selected_data['clusterId'].values
 
     # Create dataframe
-    dataset = pd.DataFrame(np.array([x,y,layer,weight]).T, columns=['x','y','layer','weight'])
+    dataset = pd.DataFrame(np.array([x,y,layer,weight, trueNh]).T, columns=['x','y','layer','weight', 'nh'])
 
     # Calculate tile indices and fill tiles as a dictionary
     tilesList = [getGlobalBin(x[k],y[k]) for k in range(len(x))]
@@ -82,11 +84,20 @@ if __name__ == "__main__":
     # print(s)
     # print(qubit_to_dec(s, dataset))
 
-    # localDensities = calculateLocalDensity_classic(dataset, tileDict, dc)
-    # dataset['rho'] = localDensities
-    # print(dataset.head())
+    # TODO: Check if localdensities agree
+    if cq == 'q':
+        localDensities = calculateLocalDensity_classic_mod(dataset, tileDict, dc)
+    elif cq == 'c':
+        localDensities = calculateLocalDensity_classic(dataset, tileDict, dc)
+    elif cq == 'ch':
+        localDensities = trueDensity
+    dataset['rho'] = localDensities
+    print(dataset.head())
 
-    calculateLocalDensity_classic_mod(dataset, tileDict, dc)
+    print('Density:', all(localDensities==trueDensity))
+
+    NH = calculateNearestHigher_classic_mod(dataset, tileDict, dc)
+    # print(NH==trueNh)
     # print(pauli_gen("I", 0, 2))
 
 
