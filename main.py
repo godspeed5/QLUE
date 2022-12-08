@@ -18,7 +18,7 @@ from copy import deepcopy
 # from post_proc import *
 from tiles import *
 from qlue_func import *
-from qlue_func_mod import calculateLocalDensity_classic_mod, calculateNearestHigher_classic_mod
+from qlue_func_mod import calculateLocalDensity_classic_mod, calculateNearestHigher_classic_mod, calculateNearestHigher_classic_mod_hard
 from q_grover import *
 
 if __name__ == "__main__":
@@ -96,7 +96,8 @@ if __name__ == "__main__":
 
     print('Density:', all(localDensities==trueDensity))
 
-    NH = calculateNearestHigher_classic_mod(dataset, tileDict, dc)
+    NH = calculateNearestHigher_classic_mod_hard(dataset, tileDict, dc)
+    # print(NH)
     # print(NH==trueNh)
     # print(pauli_gen("I", 0, 2))
 

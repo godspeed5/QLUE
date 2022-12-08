@@ -160,6 +160,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=Fa
         # loop over bins in the search box
         indices =[]
         ai = []
+        VI = []
         for xBin in range(search_box[0], search_box[1] + 1):
             for yBin in range(search_box[2], search_box[3] + 1):        
                 # get the id of this bin
@@ -170,8 +171,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=Fa
                     dataIdx = tileDict[binId]
                     binData = dataset.loc[dataIdx]
                     # print(binData.head())
-
-                    # iterate inside this bin
+                    
                     for k, point in binData.iterrows():
                         ai.append(k)
                         # query N_{dc}(i)
@@ -179,39 +179,86 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=Fa
                         # sum weights within N_{dc}(i)
                         if((dist <= dm) and (point['rho'] > temp_rho)):
                             if dist <= temp_delta:
-                                temp_delta = dist
-                                NH_index = k #update nearest higher with current point
-                                rho = point['rho']
-                                # bestpoint = point
+                                VI.append(k)
+                    # fin_track = [9]
+                    # fin_track_new = [3]
+        print('1 ', VI)
+        while len(VI)>0:
+            fin_track = [ai.index(i) for i in VI]
+            apo = list(range(2*len(ai)+1))
+            k = Grover(apo, fin_track, Printing=False)
+            if k in fin_track:
+                temp_delta = distance(dataset.loc[i], dataset.loc[ai[k]]) - 0.00001
+                # print(temp_delta)
+                VI = []
+                for xBin in range(search_box[0], search_box[1] + 1):
+                    for yBin in range(search_box[2], search_box[3] + 1):        
+                        # get the id of this bin
+                        binId = getGlobalBinByBin(xBin, yBin)
+                        # check if binId is in tileIndices
+                        if(binId in tileIndices):
+                            # get points indices in dataset
+                            dataIdx = tileDict[binId]
+                            binData = dataset.loc[dataIdx]
+                            # print(binData.head())
+                            
+                            for k, point in binData.iterrows():
+                                ai.append(k)
+                                # query N_{dc}(i)
+                                dist = distance(dataset.loc[i], point)
+                                # sum weights within N_{dc}(i)
+                                if((dist <= dm) and (point['rho'] > temp_rho)):
+                                    if dist <= temp_delta:
+                                        VI.append(k)
 
-                             #append the index of the point
-                    if NH_index != math.inf:
-                        indices = [NH_index]
+                fin_track_new = fin_track
+                print(VI)
+            else:
+                break
 
-        fin_track = [ai.index(i) for i in indices]          # indices of the points that satisfy the condition
+
+                    # while len(apo)
+
+                    # iterate inside this bin
+                    # for k, point in binData.iterrows():
+                    #     # query N_{dc}(i)
+                    #     dist = distance(dataset.loc[i], point)
+                    #     # sum weights within N_{dc}(i)
+                    #     if((dist <= dm) and (point['rho'] > temp_rho)):
+                    #         if dist <= temp_delta:
+                    #             temp_delta = dist
+                    #             NH_index = k #update nearest higher with current point
+                    #             rho = point['rho']
+                    #             # bestpoint = point
+
+                    #          #append the index of the point
+                    # if NH_index != math.inf:
+                    #     indices = [NH_index]
+
+        # fin_track = [ai.index(i) for i in indices]          # indices of the points that satisfy the condition
 
         # list of all possible tracksters (increase length if more than half the points satisfy the condition)
         
-        if run_grover:            
-            if len(fin_track)>=len(ai)//2:
-                apo = list(range(2*len(ai)+1))              
-            else:
-                apo = list(range(len(ai)))
-            a = Grover(apo, fin_track, Printing=False)
-            if len(fin_track)!=0 and [a]!=fin_track:
-                print('error')
-                print(fin_track)
-                print(a)
-                print('error')
-        else:
-            if len(fin_track) == 0:
-                a = math.inf
-            else:
-                a = fin_track[0]
-        if a in fin_track:
-            NHlist.append(ai[a])
-        else:
-            NHlist.append(math.inf)
+        # if run_grover:            
+        #     if len(fin_track)>=len(ai)//2:
+                # apo = list(range(2*len(ai)+1))              
+        #     else:
+        #         apo = list(range(len(ai)))
+        #     a = Grover(apo, fin_track, Printing=False)
+        #     if len(fin_track)!=0 and [a]!=fin_track:
+        #         print('error')
+        #         print(fin_track)
+        #         print(a)
+        #         print('error')
+        # else:
+        #     if len(fin_track) == 0:
+        #         a = math.inf
+        #     else:
+        #         a = fin_track[0]
+        # if a in fin_track:
+        #     NHlist.append(ai[a])
+        # else:
+        #     NHlist.append(math.inf)
         # print(a, fin_track)
         # if NHlist[-1]!=math.inf:
             # print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
