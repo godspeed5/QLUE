@@ -72,7 +72,7 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
     # print(dataset.head())
 
     # loop over all points
-    for i in range(len(dataset)):
+    for i in range(len(dataset[0:20])):
         temp_delta = math.inf
         NH_index = math.inf
         temp_rho = dataset['rho'][i] #initialize to the energy density of the point itself
@@ -99,9 +99,12 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
                         dist = distance(dataset.loc[i], point)
                         # sum weights within N_{dc}(i)
                         if((dist <= dm) and (point['rho'] > temp_rho)):
-                            if dist <= temp_delta:
+                            if dist < temp_delta:
                                 temp_delta = dist
                                 NH_index = k #update nearest higher with current point
+                                rho = point['rho']
+                            elif dist == temp_delta and point['rho'] > rho: 
+                                NH_index = k
                                 rho = point['rho']
                                 # bestpoint = point
 
@@ -134,8 +137,8 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
         else:
             NHlist.append(math.inf)
         # print(a, fin_track)
-        # if NHlist[-1]!=math.inf:
-            # print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
+        if NHlist[-1]!=math.inf:
+            print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
             # print(rho, dataset['rho'].iloc[NHlist[-1]], rho == dataset['rho'].iloc[NHlist[-1]])
             # print('\n')
             # print(dataset.iloc[i].to_numpy())
@@ -144,15 +147,18 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
             # print('\n')
     return NHlist
 
-def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=False):
+def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, run_grover=False):
     
     NHlist = list()
     tileIndices = tileDict.keys()
     # print(dataset.head())
 
     # loop over all points
-    for i in range(len(dataset)):
+    for i in range(len(dataset[0:20])):
+        print('point number: ', i)
         temp_delta = math.inf
+        d_low = 0
+        dm = dm_in
         NH_index = math.inf
         temp_rho = dataset['rho'][i] #initialize to the energy density of the point itself
         # get search box
@@ -161,6 +167,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=Fa
         indices =[]
         ai = []
         VI = []
+        
         for xBin in range(search_box[0], search_box[1] + 1):
             for yBin in range(search_box[2], search_box[3] + 1):        
                 # get the id of this bin
@@ -178,17 +185,28 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=Fa
                         dist = distance(dataset.loc[i], point)
                         # sum weights within N_{dc}(i)
                         if((dist <= dm) and (point['rho'] > temp_rho)):
-                            if dist <= temp_delta:
+                            if dist <= temp_delta and (dist>=d_low):
                                 VI.append(k)
                     # fin_track = [9]
                     # fin_track_new = [3]
-        print('1 ', VI)
-        while len(VI)>0:
+        print('points satisfying bb before while: ', VI)
+        c = 0 # X
+        temp_deltas = [temp_delta] # X
+        while True: # X
+            c+=1 # X
             fin_track = [ai.index(i) for i in VI]
             apo = list(range(2*len(ai)+1))
             k = Grover(apo, fin_track, Printing=False)
+            
             if k in fin_track:
-                temp_delta = distance(dataset.loc[i], dataset.loc[ai[k]]) - 0.00001
+                print('VI: ', VI)
+                NH_index = k
+                fin_track.remove(k)
+                temp_delta = distance(dataset.loc[i], dataset.loc[ai[k]])
+                temp_delta = (temp_delta + d_low)/2 #X
+                temp_deltas.append(temp_delta) # X
+                justset = 0 # X
+                justhalf = 1 # X
                 # print(temp_delta)
                 VI = []
                 for xBin in range(search_box[0], search_box[1] + 1):
@@ -207,14 +225,66 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=Fa
                                 # query N_{dc}(i)
                                 dist = distance(dataset.loc[i], point)
                                 # sum weights within N_{dc}(i)
-                                if((dist <= dm) and (point['rho'] > temp_rho)):
-                                    if dist <= temp_delta:
+                                if((dist <= dm) and (dist>=d_low) and (point['rho'] > temp_rho)):
+                                    if dist <= temp_delta and (dist>=d_low):
                                         VI.append(k)
-
-                fin_track_new = fin_track
-                print(VI)
+                # print('AI: ', ai)
+                # print('VI: ', VI)
             else:
-                break
+                # break
+
+                if c==1 or justset == 1:
+                    if NH_index != math.inf:
+                        NH_index = ai[NH_index]
+                    print('d_low: ', d_low, 'dm: ', dm)
+                    # print('VI: ', VI)
+                    print('NH: ', NH_index)
+                    
+                    break
+                else:
+                    # print('justhalf: ', justhalf)
+                    justset = 1
+                    justhalf = 0
+                    d_low = temp_delta
+                    # print('VI: ', VI)
+                    # print('temp_deltas: ', temp_deltas)
+                    # print('c: ', c)
+                    temp_deltas = temp_deltas[-2]
+            print(justset, justhalf)
+        if NH_index != math.inf:
+            for xBin in range(search_box[0], search_box[1] + 1):
+                for yBin in range(search_box[2], search_box[3] + 1):        
+                    # get the id of this bin
+                    binId = getGlobalBinByBin(xBin, yBin)
+                    # check if binId is in tileIndices
+                    if(binId in tileIndices):
+                        # get points indices in dataset
+                        dataIdx = tileDict[binId]
+                        binData = dataset.loc[dataIdx]
+                        # print(binData.head())
+                        
+                        for k, point in binData.iterrows():
+                            if distance(dataset.loc[i], dataset.loc[NH_index]) == distance(point, dataset.loc[i]):
+                                if point['rho'] > dataset['rho'][NH_index]:
+                                    NH_index = k
+                                    print('in final loop: ', NH_index)
+        print(distance(dataset.loc[NH_index], dataset.loc[i]))
+        NHlist.append(NH_index)
+        # print(dms[-1])
+    return NHlist
+    
+                    
+
+
+
+
+
+                    # print('in if2')
+                    
+                    
+                    
+
+                    
 
 
                     # while len(apo)
@@ -268,7 +338,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm, run_grover=Fa
             # print(dataset.iloc[NHlist[-1]].to_numpy())
             # print(dataset.iloc[int(dataset['nh'].iloc[i])].to_numpy())
             # print('\n')
-    return NHlist
+    
 
 def findAndAssign_clusters_classic_mod_hard(dataset, tileDict, dm):
     

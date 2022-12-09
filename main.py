@@ -97,7 +97,7 @@ if __name__ == "__main__":
     print('Density:', all(localDensities==trueDensity))
 
     NH = calculateNearestHigher_classic_mod_hard(dataset, tileDict, dc)
-    # print(NH)
+    print(NH)
     # print(NH==trueNh)
     # print(pauli_gen("I", 0, 2))
 
