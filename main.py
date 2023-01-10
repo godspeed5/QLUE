@@ -41,6 +41,9 @@ if __name__ == "__main__":
     # Define variables and parameters needed by the algo
     dc = 20
     rhoc = 25
+    delC = 3
+    phoC = rhoc
+    delM = 5
     outlierDeltaFactor = 2
 
     # These variables can be modified and passed to functions in tiles.py
@@ -96,8 +99,10 @@ if __name__ == "__main__":
 
     print('Density:', all(localDensities==trueDensity))
 
-    NH = calculateNearestHigher_classic_mod_hard(dataset, tileDict, dc)
+    NH, dataset1 = calculateNearestHigher_classic_mod_hard(dataset, tileDict, dc, delC, phoC, delM)
     print(NH)
+    print(dataset1.head())
+    dataset1.to_csv('dataset1.csv')
     # print(NH==trueNh)
     # print(pauli_gen("I", 0, 2))
 
