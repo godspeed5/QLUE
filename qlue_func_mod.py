@@ -139,15 +139,10 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
         # print(a, fin_track)
         if NHlist[-1]!=math.inf:
             print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
-            # print(rho, dataset['rho'].iloc[NHlist[-1]], rho == dataset['rho'].iloc[NHlist[-1]])
-            # print('\n')
-            # print(dataset.iloc[i].to_numpy())
-            # print(dataset.iloc[NHlist[-1]].to_numpy())
-            # print(dataset.iloc[int(dataset['nh'].iloc[i])].to_numpy())
-            # print('\n')
+
     return NHlist
 
-def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, dc, rho_c, delM, run_grover=False):
+def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_c, delM, run_grover=False):
     # delta_c = dc
 
     NHlist = list()
@@ -155,6 +150,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, dc, rho_c,
     Cnums = dict()
     Cnum = 0
     Onums = dict()
+    deltas = np.zeros(len(dataset))
     # print(dataset.head())
 
     # loop over all points
@@ -297,12 +293,15 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, dc, rho_c,
         if NH_index!=math.inf:
             print(distance(dataset.loc[NH_index], dataset.loc[i]))
             delta = distance(dataset.loc[NH_index], dataset.loc[i])
+            deltas[i] = delta
             print(dataset['rho'][i], rho_c)
-            if delta > dc and dataset['rho'][i] > rho_c:
+            if delta > delC and dataset['rho'][i] > rho_c:
                 Cnum +=1
                 Cnums[i] = Cnum
             if delta > delM and dataset['rho'][i] < rho_c:
                 Onums[i] = 1
+        # else:
+
         print('Cnums: ', Cnums)
         print('Onums: ', Onums)
         NHlist.append(NH_index)
@@ -310,149 +309,113 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, dc, rho_c,
     dataset['NH'] = NHlist
     Clist = np.zeros(len(dataset))
     Olist = np.zeros(len(dataset))
-    
+    isSeed = np.zeros(len(dataset))
+    deltas = np.zeros(len(dataset))
     for i in Cnums:
         Clist[i] = Cnums[i]
+        isSeed[i] = 1
     for i in Onums:
         Olist[i] = Onums[i]
 
     print(Clist)
     dataset['ClusterNumbers'] = Clist
-    dataset['isOutlier'] = Olist
+    if len(Onums) > 0:
+        dataset['isOutlier'] = Olist
+    dataset['isSeed'] = isSeed
+    dataset['delta'] = deltas
     return NHlist, dataset
+
+def findAndAssign_clusters_classic(dataset):
+    # tileIndices = tileDict.keys()
+    window_size = max([distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i]!=math.inf])+2
+    # print(window_size, [distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i]!=-9.223372036854776e+18])
+
+    # window_size = max([distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i] != math.inf])+2
+    # print(window_size, [distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i] != math.inf])
     
-                    
-
-
-
-
-
-                    # print('in if2')
-                    
-                    
-                    
-
-                    
-
-
-                    # while len(apo)
-
-                    # iterate inside this bin
-                    # for k, point in binData.iterrows():
-                    #     # query N_{dc}(i)
-                    #     dist = distance(dataset.loc[i], point)
-                    #     # sum weights within N_{dc}(i)
-                    #     if((dist <= dm) and (point['rho'] > temp_rho)):
-                    #         if dist <= temp_delta:
-                    #             temp_delta = dist
-                    #             NH_index = k #update nearest higher with current point
-                    #             rho = point['rho']
-                    #             # bestpoint = point
-
-                    #          #append the index of the point
-                    # if NH_index != math.inf:
-                    #     indices = [NH_index]
-
-        # fin_track = [ai.index(i) for i in indices]          # indices of the points that satisfy the condition
-
-        # list of all possible tracksters (increase length if more than half the points satisfy the condition)
-        
-        # if run_grover:            
-        #     if len(fin_track)>=len(ai)//2:
-                # apo = list(range(2*len(ai)+1))              
-        #     else:
-        #         apo = list(range(len(ai)))
-        #     a = Grover(apo, fin_track, Printing=False)
-        #     if len(fin_track)!=0 and [a]!=fin_track:
-        #         print('error')
-        #         print(fin_track)
-        #         print(a)
-        #         print('error')
-        # else:
-        #     if len(fin_track) == 0:
-        #         a = math.inf
-        #     else:
-        #         a = fin_track[0]
-        # if a in fin_track:
-        #     NHlist.append(ai[a])
-        # else:
-        #     NHlist.append(math.inf)
-        # print(a, fin_track)
-        # if NHlist[-1]!=math.inf:
-            # print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
-            # print(rho, dataset['rho'].iloc[NHlist[-1]], rho == dataset['rho'].iloc[NHlist[-1]])
-            # print('\n')
-            # print(dataset.iloc[i].to_numpy())
-            # print(dataset.iloc[NHlist[-1]].to_numpy())
-            # print(dataset.iloc[int(dataset['nh'].iloc[i])].to_numpy())
-            # print('\n')
-    
-
-def findAndAssign_clusters_classic(dataset, tileDict, dm):
-    
-    localDensities = list()
-    tileIndices = tileDict.keys()
-    window_size = dataset.NH.max()
-    dataset['clusterNumber'] = np.zeros(len(dataset))
+    # dataset['clusterNumber'] = np.zeros(len(dataset))
 
     # loop over all points
-    for i in range(len(dataset)):
-        temp_delta = math.inf
-        temp_rho = 0
+    # for i in range(len(dataset)):
         # get search box
-        search_box = searchBox(dataset.loc[i]['x'] - dm, dataset.loc[i]['x'] + dm, dataset.loc[i]['y'] - dm, dataset.loc[i]['y'] + dc)
+        # search_box = searchBox(dataset.loc[i]['x'] - dm, dataset.loc[i]['x'] + dm, dataset.loc[i]['y'] - dm, dataset.loc[i]['y'] + dc)
         # loop over bins in the search box
-        indices =[]
-        ai = []
-        for xBin in range(search_box[0], search_box[1] + 1):
-            for yBin in range(search_box[2], search_box[3] + 1):        
-                # get the id of this bin
-                binId = getGlobalBinByBin(xBin, yBin)
-                # check if binId is in tileIndices
-                if(binId in tileIndices):
-                    # get points indices in dataset
-                    dataIdx = tileDict[binId]
-                    binData = dataset.loc[dataIdx]
-                    
-
-                    # iterate inside this bin
-                    seeds = binData[binData['isSeed']==1]
-                    for k_seed, point_seed in seeds.iterrows(): # loop over all seeds
-                        point_seed['clusterNumber'] = k_seed # assign cluster number to seed
-                        cluster = [k_seed] # list of points in cluster
-                        c = 1 # flag to check if cluster has changed
-                        while c: # while cluster has changed
-                            c=0 # reset flag
-                            old_cluster = cluster.copy() # copy of cluster
-                            for k, point in binData.iterrows(): # loop over all points in bin
-                                window_check = any([distance(dataset.loc[i], point) <= window_size for i in cluster]) # boolean to check if any point in cluster is within the opened wondows
-                                if(point['isSeed']!=1 and point['isOutlier']!=1) and window_check: # if point is not a seed and is not an outlier and is within the opened windows
-                                    ai.append(k) #append the index of the point to the list of points to search in
-                                if point['NH'] in cluster: # point is a follower of any of the points in cluster
-                                    indices.append(k) # Append to the blackbox set for Grover
-                                    point['clusterNumber'] = k_seed # assign cluster number to point
-                                    cluster.append(k) # add point to cluster
-                                    c=1 # set flag to 1
-
-                                    
-                        
         
-        fin_track = [ai.index(i) for i in indices]          # indices of the points that satisfy the condition
-        i_fin_track = [ai.index(i) for i in indices]        #copy of fin_tracK
+    # iterate inside this bin
+    seeds = dataset[dataset['ClusterNumbers']!=0]
+    
+    # print(seeds)
+    for k_seed, point_seed in seeds.iterrows(): # loop over all seeds
+        cluster = set([k_seed]) # list of points in cluster
+        c = 1 # flag to check if cluster has changed
+        a = 0
+        indices =set()
+        ai = set()
+        while c: # while cluster has changed
+            a+=1
+            c=0 # reset flag
+            old_cluster = len(cluster) # copy of cluster
+            
+            for k, point in dataset.iterrows(): # loop over all points in bin
+                # print('before window check')
+                window_check = any([distance(dataset.loc[i], point) <= window_size for i in cluster]) # boolean to check if any point in cluster is within the opened wondows
+                # print('after window check')
+                if(k not in seeds and point['isOutlier']!=1) and window_check: # if point is not a seed and is not an outlier and is within the opened windows
+                    ai.add(k) #append the index of the point to the list of points to search in
+                    if point['NH'] in cluster: # point is a follower of any of the points in cluster
+                        indices.add(k) # Append to the blackbox set for Grover
+                        if dataset['ClusterNumbers'].loc[k] != 0 and k not in seeds:
+                            for i in cluster:
+                                dataset['ClusterNumbers'].loc[i] = dataset['ClusterNumbers'].loc[k] #merge clusters
+                                print('merged')
+                        dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
+                        cluster.add(k) # add point to cluster
+                        c=1 # set flag to 1
+            print(len(cluster))
+            if len(cluster) == old_cluster:
+                c=0
+            print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
+            print('ai: ', len(ai), 'indices: ', len(indices))
+            print(all([(i in ai) for i in indices]))
+        
+    return dataset
 
-        # list of all possible tracksters (increase length if more than half the points satisfy the condition)
-        if len(fin_track)>=len(ai)//2:
-            apo = list(range(2*len(ai)+1))              
-        else:
-            apo = list(range(len(ai)))                  
-        b = []
-        a = Grover(apo, fin_track, Printing=False)
-        while a in fin_track:
-            fin_track.remove(a)
-            b.append(a)
-            a = Grover(apo, fin_track, Printing=False)
-            print(fin_track)            
-        print(set(b)==set(i_fin_track))
-
-        localDensities.append(temp_rho)
-    return localDensities
+def findAndAssign_clusters_quantum(dataset):
+    window_size = dataset['NH'].max()+2
+    seeds = dataset[dataset['ClusterNumbers']!=0]
+    for k_seed, point_seed in seeds.iterrows(): # loop over all seeds
+        cluster = set([k_seed]) # list of points in cluster
+        c = 1 # flag to check if cluster has changed
+        a = 0
+        indices =set()
+        ai = set()
+        while c: # while cluster has changed
+            a+=1
+            c=0 # reset flag
+            old_cluster = len(cluster) # copy of cluster
+            
+            for k, point in dataset.iterrows(): # loop over all points in bin
+                # print('before window check')
+                window_check = any([distance(dataset.loc[i], point) <= window_size for i in cluster]) # boolean to check if any point in cluster is within the opened wondows
+                # print('after window check')
+                if(point['ClusterNumbers']==0 and point['isOutlier']!=1) and window_check: # if point is not a seed and is not an outlier and is within the opened windows
+                    ai.add(k) #append the index of the point to the list of points to search in
+                    if point['NH'] in cluster: # point is a follower of any of the points in cluster
+                        indices.add(k) # Append to the blackbox set for Grover
+                        dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
+                        ai_list = list(ai)
+                        fin_track = [ai_list.index(k)]
+                        apo = list(range(2*len(ai)+1))
+                        ans = Grover(apo, fin_track, Printing=False)
+                        print('k: ', k, 'ans: ', ans, 'ai[ans]: ', ai_list[ans])
+                        cluster.add(ai_list[ans])
+                        c=1 # set flag to 1
+            print(len(cluster))
+            if len(cluster) == old_cluster:
+                c=0
+            
+            print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
+            print('ai: ', len(ai), 'indices: ', len(indices))
+            print(all([(i in ai_list) for i in indices]))
+        
+    return dataset

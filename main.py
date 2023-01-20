@@ -18,7 +18,7 @@ from copy import deepcopy
 # from post_proc import *
 from tiles import *
 from qlue_func import *
-from qlue_func_mod import calculateLocalDensity_classic_mod, calculateNearestHigher_classic_mod, calculateNearestHigher_classic_mod_hard
+from qlue_func_mod import *
 from q_grover import *
 
 if __name__ == "__main__":
@@ -37,14 +37,20 @@ if __name__ == "__main__":
 
     # Import the data for QLUE
     qlue_data = pd.read_csv(data_dir+ "aniso_1000_20.00_25.00_2.00.csv")
+    # qlue_data = pd.read_csv(data_dir+ "dataset1.csv")
 
     # Define variables and parameters needed by the algo
+    outlierDeltaFactor = 2
+
     dc = 20
     rhoc = 25
-    delC = 3
+    # delM = outlierDeltaFactor*dc
+    delM = dc/2
+
+    delC = dc/2
     phoC = rhoc
-    delM = 5
-    outlierDeltaFactor = 2
+    
+    
 
     # These variables can be modified and passed to functions in tiles.py
     #tilesMaxX = 250
@@ -69,10 +75,13 @@ if __name__ == "__main__":
     trueDelta = selected_data['delta'].values
     trueisSeed = selected_data['isSeed'].values
     trueClusterId = selected_data['clusterId'].values
+    # computedNH = selected_data['NH'].values.astype(int)
+    # computedClusterNumbers = selected_data['ClusterNumbers'].values
+    # computedisOutlier = selected_data['isOutlier'].values
 
     # Create dataframe
-    dataset = pd.DataFrame(np.array([x,y,layer,weight, trueNh]).T, columns=['x','y','layer','weight', 'nh'])
-
+    # dataset = pd.DataFrame(np.array([x,y,layer,weight, trueNh, trueDensity, computedNH, computedClusterNumbers, computedisOutlier]).T, columns=['x','y','layer','weight', 'nh_old', 'rho', 'NH', 'ClusterNumbers', 'isOutlier'])
+    dataset = pd.DataFrame(np.array([x,y,layer,weight]).T, columns=['x','y','layer','weight'])
     # Calculate tile indices and fill tiles as a dictionary
     tilesList = [getGlobalBin(x[k],y[k]) for k in range(len(x))]
     uniqueTileIdx, counts = np.unique(tilesList, return_counts=True)
@@ -95,14 +104,19 @@ if __name__ == "__main__":
     elif cq == 'ch':
         localDensities = trueDensity
     dataset['rho'] = localDensities
-    print(dataset.head())
+    # print(dataset.head())
 
-    print('Density:', all(localDensities==trueDensity))
+    # print('Density:', all(localDensities==trueDensity))
 
-    NH, dataset1 = calculateNearestHigher_classic_mod_hard(dataset, tileDict, dc, delC, phoC, delM)
-    print(NH)
-    print(dataset1.head())
-    dataset1.to_csv('dataset1.csv')
+    NH, dataset = calculateNearestHigher_classic_mod_hard(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
+    dataset1 = findAndAssign_clusters_classic(dataset)
+    dataset1.to_csv('datasets/dataset1.csv')
+
+    print(dataset1[dataset1['ClusterNumbers']!=0])
+    dataset1.to_csv('D1.csv')
+    # print(NH)
+    # print(dataset1.head())
+    # dataset1.to_csv('dataset1.csv')
     # print(NH==trueNh)
     # print(pauli_gen("I", 0, 2))
 
