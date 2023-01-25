@@ -418,33 +418,30 @@ def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write 
     # window_size = max([distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i]!=math.inf])+2
         
     # iterate inside this bin
-    seeds = dataset[dataset['isSeed']!=0]
-    tileIndices = tileDict.keys()
+    seeds = dataset[dataset['isSeed']!=0] # list of seeds in dataset
+    tileIndices = tileDict.keys() # list of all tiles
     print(seeds)
     
     # print(seeds)
     for k_seed, point_seed in seeds.iterrows(): # loop over all seeds
         cluster = set([k_seed]) # list of points in cluster
         c = 1 # flag to check if cluster has changed
-        a = 0
-        indices =set()
-        ai = set()
-        search_boxes = []
+        a = 0 # counter for iterations
+        indices =set() # set of indices for blackbox
+        ai = set() # set of indices to search in
+        search_boxes = [] # list of search boxes
         while c: # while cluster has changed
-            a+=1
+            a+=1 # increment counter
             c=0 # reset flag
-            old_cluster = len(cluster) # copy of cluster
+            old_cluster = len(cluster) # length of old cluster
             for i in cluster:
-                search_boxes.append(searchBox(dataset.loc[i]['x'] - dm_in, dataset.loc[i]['x'] + dm_in, dataset.loc[i]['y'] - dm_in, dataset.loc[i]['y'] + dm_in))
+                search_boxes.append(searchBox(dataset.loc[i]['x'] - dm_in, dataset.loc[i]['x'] + dm_in, dataset.loc[i]['y'] - dm_in, dataset.loc[i]['y'] + dm_in)) # add search box to list
             print(search_boxes)
             # loop over bins in the search box
-            indices =set()
-            ai = set()
-            VI = set()
            
-            for i in range(len(search_boxes)):                
-                for xBin in range(search_boxes[i][0], search_boxes[i][1] + 1):
-                    for yBin in range(search_boxes[i][2], search_boxes[i][3] + 1):  # loop over all points in bin
+            for i in range(len(search_boxes)): # loop over all search boxes            
+                for xBin in range(search_boxes[i][0], search_boxes[i][1] + 1): 
+                    for yBin in range(search_boxes[i][2], search_boxes[i][3] + 1): # loop over all bins in search box
                         # get the id of this bin
                         binId = getGlobalBinByBin(xBin, yBin)
                         # print(binId)
@@ -457,16 +454,10 @@ def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write 
                             binData = dataset.loc[dataIdx]
                             # print(binData.head())
                             print(binData.index)
-                            for k, point in binData.iterrows():
-                                if k == k_seed:
-                                    print('yes')
-                                if point['NH'] in cluster:
-                                    print('its there bro')
-                                if(k not in seeds and point['isOutlier']!=1): # if point is not a seed and is not an outlier and is within the opened windows
-                                    # print(k)
+                            for k, point in binData.iterrows(): # loop over all points in bin
+                                if(k not in seeds and point['isOutlier']!=1): # if point is not a seed and is not an outlier
                                     ai.add(k) #append the index of the point to the list of points to search in
                                     if point['NH'] in cluster: # point is a follower of any of the points in cluster
-                                        print('its really there bro')
                                         indices.add(k) # Append to the blackbox set for Grover
                                         dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
                                         cluster.add(k) # add point to cluster
