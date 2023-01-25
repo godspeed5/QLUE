@@ -295,11 +295,14 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
             delta = distance(dataset.loc[NH_index], dataset.loc[i])
             deltas[i] = delta
             print(dataset['rho'][i], rho_c)
-            if delta > delC and dataset['rho'][i] > rho_c:
-                Cnum +=1
-                Cnums[i] = Cnum
-            if delta > delM and dataset['rho'][i] < rho_c:
-                Onums[i] = 1
+        else:
+            delta = 999
+            deltas[i] = 999
+        if delta > delC and dataset['rho'][i] > rho_c:
+            Cnum +=1
+            Cnums[i] = Cnum
+        if delta > delM and dataset['rho'][i] < rho_c:
+            Onums[i] = 1
         # else:
 
         print('Cnums: ', Cnums)
@@ -310,7 +313,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
     Clist = np.zeros(len(dataset))
     Olist = np.zeros(len(dataset))
     isSeed = np.zeros(len(dataset))
-    deltas = np.zeros(len(dataset))
+    # deltas = np.zeros(len(dataset))
     for i in Cnums:
         Clist[i] = Cnums[i]
         isSeed[i] = 1
@@ -325,21 +328,9 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
     dataset['delta'] = deltas
     return NHlist, dataset
 
-def findAndAssign_clusters_classic(dataset):
+def findAndAssign_clusters_classic(dataset): #TODO: write faster function with nearest higher search box
     # tileIndices = tileDict.keys()
     window_size = max([distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i]!=math.inf])+2
-    # print(window_size, [distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i]!=-9.223372036854776e+18])
-
-    # window_size = max([distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i] != math.inf])+2
-    # print(window_size, [distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i] != math.inf])
-    
-    # dataset['clusterNumber'] = np.zeros(len(dataset))
-
-    # loop over all points
-    # for i in range(len(dataset)):
-        # get search box
-        # search_box = searchBox(dataset.loc[i]['x'] - dm, dataset.loc[i]['x'] + dm, dataset.loc[i]['y'] - dm, dataset.loc[i]['y'] + dc)
-        # loop over bins in the search box
         
     # iterate inside this bin
     seeds = dataset[dataset['ClusterNumbers']!=0]
@@ -358,16 +349,16 @@ def findAndAssign_clusters_classic(dataset):
             
             for k, point in dataset.iterrows(): # loop over all points in bin
                 # print('before window check')
-                window_check = any([distance(dataset.loc[i], point) <= window_size for i in cluster]) # boolean to check if any point in cluster is within the opened wondows
+                window_check = any([distance(dataset.loc[i], point) <= window_size for i in cluster]) # boolean to check if any point in cluster is within the opened windows
                 # print('after window check')
                 if(k not in seeds and point['isOutlier']!=1) and window_check: # if point is not a seed and is not an outlier and is within the opened windows
                     ai.add(k) #append the index of the point to the list of points to search in
                     if point['NH'] in cluster: # point is a follower of any of the points in cluster
                         indices.add(k) # Append to the blackbox set for Grover
-                        if dataset['ClusterNumbers'].loc[k] != 0 and k not in seeds:
-                            for i in cluster:
-                                dataset['ClusterNumbers'].loc[i] = dataset['ClusterNumbers'].loc[k] #merge clusters
-                                print('merged')
+                        # if dataset['ClusterNumbers'].loc[k] != 0 and k not in seeds:
+                        #     for i in cluster: #TODO: check merge logic
+                        #         dataset['ClusterNumbers'].loc[i] = dataset['ClusterNumbers'].loc[k] #merge clusters
+                        #         print('merged')
                         dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
                         cluster.add(k) # add point to cluster
                         c=1 # set flag to 1
@@ -417,5 +408,74 @@ def findAndAssign_clusters_quantum(dataset):
             print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
             print('ai: ', len(ai), 'indices: ', len(indices))
             print(all([(i in ai_list) for i in indices]))
+        
+    return dataset
+
+def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write faster function with nearest higher search box
+    # tileIndices = tileDict.keys()
+    print(dm_in)
+
+    # window_size = max([distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i]!=math.inf])+2
+        
+    # iterate inside this bin
+    seeds = dataset[dataset['isSeed']!=0]
+    tileIndices = tileDict.keys()
+    print(seeds)
+    
+    # print(seeds)
+    for k_seed, point_seed in seeds.iterrows(): # loop over all seeds
+        cluster = set([k_seed]) # list of points in cluster
+        c = 1 # flag to check if cluster has changed
+        a = 0
+        indices =set()
+        ai = set()
+        search_boxes = []
+        while c: # while cluster has changed
+            a+=1
+            c=0 # reset flag
+            old_cluster = len(cluster) # copy of cluster
+            for i in cluster:
+                search_boxes.append(searchBox(dataset.loc[i]['x'] - dm_in, dataset.loc[i]['x'] + dm_in, dataset.loc[i]['y'] - dm_in, dataset.loc[i]['y'] + dm_in))
+            print(search_boxes)
+            # loop over bins in the search box
+            indices =set()
+            ai = set()
+            VI = set()
+           
+            for i in range(len(search_boxes)):                
+                for xBin in range(search_boxes[i][0], search_boxes[i][1] + 1):
+                    for yBin in range(search_boxes[i][2], search_boxes[i][3] + 1):  # loop over all points in bin
+                        # get the id of this bin
+                        binId = getGlobalBinByBin(xBin, yBin)
+                        # print(binId)
+                        # check if binId is in tileIndices
+                        if(binId in tileIndices):
+                            # print('binId: ', binId)
+                            # get points indices in dataset
+                            dataIdx = tileDict[binId]
+                            # print('dataIdx: ', dataIdx)
+                            binData = dataset.loc[dataIdx]
+                            # print(binData.head())
+                            print(binData.index)
+                            for k, point in binData.iterrows():
+                                if k == k_seed:
+                                    print('yes')
+                                if point['NH'] in cluster:
+                                    print('its there bro')
+                                if(k not in seeds and point['isOutlier']!=1): # if point is not a seed and is not an outlier and is within the opened windows
+                                    # print(k)
+                                    ai.add(k) #append the index of the point to the list of points to search in
+                                    if point['NH'] in cluster: # point is a follower of any of the points in cluster
+                                        print('its really there bro')
+                                        indices.add(k) # Append to the blackbox set for Grover
+                                        dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
+                                        cluster.add(k) # add point to cluster
+                                        c=1 # set flag to 1                    
+            print('cluster length: ', len(cluster))
+            if len(cluster) == old_cluster:
+                c=0
+            print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
+            print('ai: ', len(ai), 'indices: ', len(indices))
+            print(all([(i in ai) for i in indices]))
         
     return dataset

@@ -1,6 +1,6 @@
 ################################################################
 ################################################################
-### ***************** MAIN FILE FOR QLUE ******************* ###
+### ************MAIN FILE FOR QLUE Clustering*************** ###
 ################################################################
 ################################################################
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     cq = args.cq
 
     # Import the data for QLUE
-    qlue_data = pd.read_csv(data_dir+ "aniso_1000_20.00_25.00_2.00.csv")
+    qlue_data = pd.read_csv(data_dir+ "dataset1.csv")
     # qlue_data = pd.read_csv(data_dir+ "dataset1.csv")
 
     # Define variables and parameters needed by the algo
@@ -71,17 +71,18 @@ if __name__ == "__main__":
     weight = selected_data['weight'].values
 
     trueDensity = selected_data['rho'].values
-    trueNh = selected_data['nh'].values.astype(int)
-    trueDelta = selected_data['delta'].values
+    trueNh = selected_data['NH'].values.astype(int)
+    trueClusterNumber = selected_data['ClusterNumbers'].values
+    trueiOutlier = selected_data['isOutlier'].values
     trueisSeed = selected_data['isSeed'].values
-    trueClusterId = selected_data['clusterId'].values
+    trueDelta = selected_data['delta'].values
     # computedNH = selected_data['NH'].values.astype(int)
     # computedClusterNumbers = selected_data['ClusterNumbers'].values
     # computedisOutlier = selected_data['isOutlier'].values
 
     # Create dataframe
     # dataset = pd.DataFrame(np.array([x,y,layer,weight, trueNh, trueDensity, computedNH, computedClusterNumbers, computedisOutlier]).T, columns=['x','y','layer','weight', 'nh_old', 'rho', 'NH', 'ClusterNumbers', 'isOutlier'])
-    dataset = pd.DataFrame(np.array([x,y,layer,weight]).T, columns=['x','y','layer','weight'])
+    dataset = pd.DataFrame(np.array([x,y,layer,weight, trueDensity, trueNh, trueClusterNumber, trueiOutlier, trueisSeed, trueDelta]).T, columns=['x','y','layer','weight','rho','NH','ClusterNumbers','isOutlier','isSeed','delta'])
     # Calculate tile indices and fill tiles as a dictionary
     tilesList = [getGlobalBin(x[k],y[k]) for k in range(len(x))]
     uniqueTileIdx, counts = np.unique(tilesList, return_counts=True)
@@ -108,29 +109,9 @@ if __name__ == "__main__":
 
     # print('Density:', all(localDensities==trueDensity))
 
-    NH, dataset = calculateNearestHigher_classic_mod_hard(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
-    dataset.to_csv('datasets/dataset1.csv')
-    # dataset1 = findAndAssign_clusters_classic(dataset)
-   
+    # NH, dataset = calculateNearestHigher_classic_mod_hard(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
+    dataset1 = findAndAssign_clusters_classic_fast(dataset, tileDict, outlierDeltaFactor*dc)
+    # dataset1.to_csv('datasets/dataset1_toy.csv')
 
-    # print(dataset1[dataset1['ClusterNumbers']!=0])
-    # dataset1.to_csv('D1.csv')
-    # print(NH)
-    # print(dataset1.head())
-    # dataset1.to_csv('dataset1.csv')
-    # print(NH==trueNh)
-    # print(pauli_gen("I", 0, 2))
-
-
-####### TODOLIST
-#     # - calculate local density
-        # write quantum version of the function using one of two methods (grover -> one-point state, grover -> all-points state)
-    
-     # - find nearest higher
-        # use grover -> one-point state (good because nearest higher is unique)       
-
-
-    # fig = plt.figure()
-    # plt.scatter(allX,allY)
-    # plt.savefig('scatter_plot.pdf')
-
+    # print(dataset1[dataset1['isSeed']==1])
+    # dataset1.to_csv('D1_toy.csv')
