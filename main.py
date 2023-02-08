@@ -109,12 +109,10 @@ if __name__ == "__main__":
     # print('Density:', all(localDensities==trueDensity))
 
     NH, dataset = calculateNearestHigher_classic_mod_hard(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
-    dataset.to_csv('datasets/dataset1.csv')
-    # dataset1 = findAndAssign_clusters_classic(dataset)
-   
+    dataset.to_csv('datasets/dataset1_correct.csv')
+    dataset1 = findAndAssign_clusters_classic_fast(dataset)
 
-    # print(dataset1[dataset1['ClusterNumbers']!=0])
-    # dataset1.to_csv('D1.csv')
+    dataset1.to_csv('D1_correct.csv')
     # print(NH)
     # print(dataset1.head())
     # dataset1.to_csv('dataset1.csv')

@@ -298,7 +298,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
         else:
             delta = 999
             deltas[i] = 999
-        if delta > delC and dataset['rho'][i] > rho_c:
+        if (delta > delC) and dataset['rho'][i] >= rho_c:
             Cnum +=1
             Cnums[i] = Cnum
         if delta > delM and dataset['rho'][i] < rho_c:
@@ -436,32 +436,37 @@ def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write 
             old_cluster = len(cluster) # length of old cluster
             for i in cluster:
                 search_boxes.append(searchBox(dataset.loc[i]['x'] - dm_in, dataset.loc[i]['x'] + dm_in, dataset.loc[i]['y'] - dm_in, dataset.loc[i]['y'] + dm_in)) # add search box to list
-            print(search_boxes)
+            curr_search_box = [min([i[0] for i in search_boxes]), max([i[1] for i in search_boxes]), min([i[2] for i in search_boxes]), max([i[3] for i in search_boxes])] # get current search box
+            print(curr_search_box)
+            # print('seed: ', dataset.loc[k_seed])
+            # print(search_boxes)
             # loop over bins in the search box
            
-            for i in range(len(search_boxes)): # loop over all search boxes            
-                for xBin in range(search_boxes[i][0], search_boxes[i][1] + 1): 
-                    for yBin in range(search_boxes[i][2], search_boxes[i][3] + 1): # loop over all bins in search box
-                        # get the id of this bin
-                        binId = getGlobalBinByBin(xBin, yBin)
-                        # print(binId)
-                        # check if binId is in tileIndices
-                        if(binId in tileIndices):
-                            # print('binId: ', binId)
-                            # get points indices in dataset
-                            dataIdx = tileDict[binId]
-                            # print('dataIdx: ', dataIdx)
-                            binData = dataset.loc[dataIdx]
-                            # print(binData.head())
-                            print(binData.index)
-                            for k, point in binData.iterrows(): # loop over all points in bin
-                                if(k not in seeds and point['isOutlier']!=1): # if point is not a seed and is not an outlier
-                                    ai.add(k) #append the index of the point to the list of points to search in
-                                    if point['NH'] in cluster: # point is a follower of any of the points in cluster
-                                        indices.add(k) # Append to the blackbox set for Grover
-                                        dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
-                                        cluster.add(k) # add point to cluster
-                                        c=1 # set flag to 1                    
+            # for i in range(len(search_boxes)): # loop over all search boxes            
+            for xBin in range(curr_search_box[0], curr_search_box[1] + 1): 
+                for yBin in range(curr_search_box[2], curr_search_box[3] + 1): # loop over all bins in search box
+                    # get the id of this bin
+                    binId = getGlobalBinByBin(xBin, yBin)
+                    # print(binId)
+                    # check if binId is in tileIndices
+                    if(binId in tileIndices):
+                        # print('binId: ', binId)
+                        # get points indices in dataset
+                        dataIdx = tileDict[binId]
+                        # print('dataIdx: ', dataIdx)
+                        binData = dataset.loc[dataIdx]
+                        # print(binData.head())
+                        # print(binData.index)
+                        for k, point in binData.iterrows(): # loop over all points in bin
+                            # print('NH: ', point['NH'] == k_seed)
+                            if(k not in seeds and point['isOutlier']!=1): # if point is not a seed and is not an outlier
+                                ai.add(k) #append the index of the point to the list of points to search in
+                                if point['NH'] in cluster: # point is a follower of any of the points in cluster
+                                    indices.add(k) # Append to the blackbox set for Grover
+                                    dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
+                                    cluster.add(k) # add point to cluster
+                                    c=1 # set flag to 1  
+                # exit()                  
             print('cluster length: ', len(cluster))
             if len(cluster) == old_cluster:
                 c=0

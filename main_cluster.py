@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     # Take only data on selected layer
     chosen_layer = 0
-    selected_data = qlue_data[qlue_data['layer']==chosen_layer].sort_values(sortpar, ascending=False, ignore_index=True)
+    selected_data = qlue_data[qlue_data['layer']==chosen_layer] #.sort_values(sortpar, ascending=False, ignore_index=True)
 
     x = selected_data['x'].values
     y = selected_data['y'].values
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
     # NH, dataset = calculateNearestHigher_classic_mod_hard(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
     dataset1 = findAndAssign_clusters_classic_fast(dataset, tileDict, outlierDeltaFactor*dc)
-    # dataset1.to_csv('datasets/dataset1_toy.csv')
+    dataset1.to_csv('D1_fast_correct.csv')
 
     # print(dataset1[dataset1['isSeed']==1])
     # dataset1.to_csv('D1_toy.csv')
