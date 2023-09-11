@@ -36,7 +36,7 @@ if __name__ == "__main__":
     cq = args.cq
 
     # Import the data for QLUE
-    qlue_data = pd.read_csv(data_dir+ "dataset1.csv")
+    qlue_data = pd.read_csv(data_dir+ "dataset1_correct_generated.csv")
     # qlue_data = pd.read_csv(data_dir+ "dataset1.csv")
 
     # Define variables and parameters needed by the algo
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
     # NH, dataset = calculateNearestHigher_classic_mod_hard(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
     dataset1 = findAndAssign_clusters_classic_fast(dataset, tileDict, outlierDeltaFactor*dc)
-    dataset1.to_csv('D1_fast_correct.csv')
+    dataset1.to_csv('D1_fast_correct_generated.csv')
 
     # print(dataset1[dataset1['isSeed']==1])
     # dataset1.to_csv('D1_toy.csv')

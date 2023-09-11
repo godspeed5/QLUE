@@ -28,8 +28,8 @@ import seaborn as sns
 from scipy.stats import *
 from sklearn.metrics import *
 matplotlib.use('Agg')
-import wandb
 import time
+import wandb
 import glob
 # wandb.init(project='qlue_overlap')
 
@@ -68,6 +68,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='datasets/')
 parser.add_argument('--sortpar', type=str, default='weight', help='weight or rho')
 parser.add_argument('--cq', type=str, default='ch', help='classical or quantum or cheating')
+parser.add_argument('--output_dir', type=str, default='output/noise_sigma/', help='output directory')
+
 
 args = parser.parse_args()
 
@@ -75,28 +77,27 @@ args = parser.parse_args()
 data_dir = args.dir
 sortpar = args.sortpar
 cq = args.cq
-output_dir = 'output_circles_num/'
+output_dir = args.output_dir
 
 
-dists = [0,20,25,30,35,40,50,60,70,80,100, 120, 140]
-iters = 10
-h_scores = np.zeros((len(dists), iters))
-c_scores = np.zeros((len(dists), iters))
-v_scores = np.zeros((len(dists), iters))
-
+noise_sizes = [0,50,100,150,200,250,300,350,400,450,500]
 # dists=[100,200]
 it = time.time()
-prefactors = [1, 2,5,10,20]
-ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
-for pfi, prefactor_factor in enumerate(prefactors):
-    if len(glob.glob(output_dir+'h_score_'+str(pfi)+'.npy')) == 0:
-
+iters = 25
+sigmas = [1,5,10,100,1000]
+h_scores = np.zeros((len(noise_sizes), iters, len(sigmas)))
+# c_scores = np.zeros((len(noise_sizes), iters))
+# v_scores = np.zeros((len(noise_sizes), iters))
+for n_sigma, sigma in enumerate(sigmas):
+    # print('Length is: ', len(glob.glob(data_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy')))
+    if len(glob.glob(output_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy'))==0:
         for iter in range(iters):
+            for noise_index in range(len(noise_sizes)):
 
-            for dist_index in range(len(dists)):
-
-                ##### Create Gaussian clusters #####
-                cova = np.array([[ 800,0],[0,800]])
+                
+                # wandb.run=None
+                # run=wandb.init()
+                cova = np.array([[ sigma,0],[0,sigma]])
 
                 # print(wandb.config)
 
@@ -104,12 +105,12 @@ for pfi, prefactor_factor in enumerate(prefactors):
 
 
 
-                n_samples = [30, prefactor_factor*30]
-                n_noise = 0
+                n_samples = [500]
+                n_noise = noise_sizes[noise_index]
 
-                means = [[-dists[dist_index],0],[dists[dist_index],0]]
-                covs = [cova]*2
-                prefactor = [1e5, 1e5]
+                means = [[0,0]]
+                covs = [cova]
+                prefactor = [1e5]*2
                 n_clusters = len(means)
                 df = pd.DataFrame(columns=['x','y','clusterId'])
                 for i in range(n_clusters):
@@ -122,14 +123,14 @@ for pfi, prefactor_factor in enumerate(prefactors):
                 df = pd.concat([df,n])
                 df['layer']=np.zeros(len(df))
 
-                df.to_csv(data_dir+ 'gen_data_'+str(dists[dist_index])+'.csv')
+                df.to_csv(data_dir+ 'gen_data_'+str(noise_sizes[noise_index])+'_noise.csv')
 
-                ######### Read data #########
+                
 
 
 
                 # Import the data for QLUE
-                qlue_data = pd.read_csv(data_dir+ 'gen_data_'+str(dists[dist_index])+'.csv')
+                qlue_data = pd.read_csv(data_dir+ 'gen_data_'+str(noise_sizes[noise_index])+'_noise.csv')
                 # qlue_data = pd.read_csv(data_dir+ "dataset1.csv")
 
                 # Define variables and parameters needed by the algo
@@ -202,86 +203,84 @@ for pfi, prefactor_factor in enumerate(prefactors):
                 # print(dataset.head())
 
                 # print('Density:', all(localDensities==trueDensity))
-                # dataset_ld.to_csv('datasets/dataset_generated_ld_c.csv')
+                dataset_ld.to_csv('datasets/dataset_generated_ld_c_noise.csv')
 
                 NH, dataset = calculateNearestHigher_classic_mod(dataset_ld, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
 
                 # NH, dataset = calculateNearestHigher_classic_mod_hard(dataset_ld, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
                 # NH, dataset = calculateNearestHigher_classic_mod(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)    
-                # dataset.to_csv('datasets/dataset1_correct_generated_c.csv')
+                dataset.to_csv('datasets/dataset1_correct_generated_c_noise_circles.csv')
                 dataset1 = findAndAssign_clusters_classic_fast(dataset, tileDict, delM)
 
-                # dataset1.to_csv('D1_correct_generated_c.csv')
+                dataset1.to_csv('D1_correct_generated_c.csv')
                 
 
                 h_score,c_score,v_score = homogeneity_completeness_v_measure(dataset1['clusterId'].values, dataset1['ClusterNumbers'].values)
                 print(h_score, c_score, v_score)
-                h_scores[dist_index, iter] = h_score
-                c_scores[dist_index, iter] = c_score
-                v_scores[dist_index, iter] = v_score
+                h_scores[noise_index, iter,n_sigma] = h_score
 
                 sns.scatterplot(data=dataset1, x="x", y="y", hue="ClusterNumbers", palette="deep").set_title('Computed clusters')
                 plt.legend([],[], frameon=False)
-                plt.text(0,75,'score: ' + str(round(h_score, 2)))
-                plt.ylim(-100,100)
-                plt.xlim(-100,100)
-                plt.savefig(output_dir+'/computed_clusters_'+str(dists[dist_index])+'_'+str(pfi)+'.png')
+                plt.ylim(-300,300)
+                plt.text(0,275, 'score: '+ str(round(h_score,2)))
+                plt.savefig(output_dir+'computed_clusters_'+str(noise_sizes[noise_index])+'_sigma_' + str(sigma)+'.png')
                 plt.close()
 
                 sns.scatterplot(data=dataset1, x="x", y="y", hue="clusterId", palette="deep").set_title('True clusters')
                 plt.legend([],[], frameon=False)
-                plt.savefig(output_dir + 'true_clusters_'+str(dists[dist_index])+'_'+str(pfi)+'.png')
+                plt.savefig(output_dir+'true_clusters_'+str(noise_sizes[noise_index])+'_sigma_' + str(sigma)+'.png')
                 plt.close()
 
-            # print(h_scores)
-
-        # print(h_scores)
-        # print(c_scores)
-    #     # print(v_scores)
-    # np.save('h_scores.npy', h_scores)
-    # np.save('c_scores.npy', c_scores)
-    # np.save('v_scores.npy', v_scores)
-
-    # h_scores = np.load('h_scores.npy')
-    # c_scores = np.load('c_scores.npy')
-    # v_scores = np.load('v_scores.npy')
-        print(h_scores.shape)
-    # print(c_scores.shape)
-    # print(v_scores.shape)
-        # plt.plot(dists, np.mean(h_scores, axis=1), label='homogeneity_'+str((pfi)))
-        # plt.fill_between(dists, np.mean(h_scores, axis=1)-np.std(h_scores, axis=1), np.mean(h_scores, axis=1)+np.std(h_scores, axis=1), alpha=0.2)
-        # print(h_scores.shape, a.shape)
-        np.save(output_dir+'h_score_'+str(pfi)+'.npy', np.array(h_scores))
+        np.save(output_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy', h_scores)
     else:
-        h_scores = np.load(output_dir+'h_score_'+str(pfi)+'.npy')
-    plt.plot(dists, np.mean(h_scores, axis=1), label='homogeneity_'+str((pfi)))
-    plt.fill_between(dists, np.mean(h_scores, axis=1)-np.std(h_scores, axis=1), np.mean(h_scores, axis=1)+np.std(h_scores, axis=1), alpha=0.2)
-    # plt.savefig(output_dir+'homogeneity_varied_energy_'+str(pfi)+'.png')
-    ans[:,:,pfi] = np.array(h_scores)
-    
-plt.xlabel('Distance between clusters')
-plt.ylabel('Homogeneity')
-plt.legend(prefactors)
-np.save(output_dir+'homogeneities_varied_energy.npy', ans)
-# plt.text(100,0, h_score)
-plt.savefig(output_dir+'homogeneity_varied_energy.png')
+        print('Loading from file')
+        h_scores = np.load(output_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy')          
+    plt.plot(noise_sizes/n_samples[0], np.mean(h_scores[:,:,n_sigma], axis=1), label='homogeneity')
+    plt.fill_between(noise_sizes, np.mean(h_scores[:,:,n_sigma], axis=1)-np.std(h_scores[:,:,n_sigma], axis=1), np.mean(h_scores[:,:,n_sigma], axis=1)+np.std(h_scores[:,:,n_sigma], axis=1), alpha=0.2)
+    # plt.savefig(output_dir+'homogeneity_noise_sigma_'+str(sigma)+'.png')
+    # plt.close()
+plt.xlabel('No. of noise samples/No. of cluster samples')
+plt.ylabel('Homogeneity Score')
+plt.legend(sigmas)
+plt.savefig(output_dir+'homogeneity_noise_sigma.png')
 plt.close()
+            # v_scores[noise_index, iter] = v_score
+    # print(h_scores)
+
+# print(h_scores)
+# print(c_scores)
+# print(v_scores)
+
+# np.save('h_scores_noise.npy', h_scores)
+# np.save('c_scores_noise.npy', c_scores)
+# np.save('v_scores_noise.npy', v_scores)
+
+# h_scores = np.load('h_scores_noise.npy')
+# c_scores = np.load('c_scores_noise.npy')
+# v_scores = np.load('v_scores_noise.npy')
+# print(h_scores.shape)
+# print(c_scores.shape)
+# print(v_scores.shape)
+    
 
 # plt.close()
-# plt.plot(dists, np.mean(c_scores, axis=1), label='completeness')
-# plt.fill_between(dists, np.mean(c_scores,axis=1)-np.std(c_scores, axis=1), np.mean(c_scores, axis=1)+np.std(c_scores, axis=1), alpha=0.2)
-# plt.savefig('completeness.png')
+# plt.plot(noise_sizes, np.mean(c_scores, axis=1), label='completeness')
+# plt.fill_between(noise_sizes, np.mean(c_scores,axis=1)-np.std(c_scores, axis=1), np.mean(c_scores, axis=1)+np.std(c_scores, axis=1), alpha=0.2)
+# plt.savefig(data_dir+'completeness_noise.png')
 # plt.close()
 
-# plt.plot(dists, v_scores, label='v_measure')
-# plt.fill_between(dists, np.mean(v_scores, axis=1)-np.std(v_scores, axis=1), np.mean(v_scores, axis=1)+np.std(v_scores, axis=1), alpha=0.2)
-# plt.savefig('v_measure.png')
+# plt.plot(noise_sizes, v_scores, label='v_measure')
+# plt.fill_between(noise_sizes, np.mean(v_scores, axis=1)-np.std(v_scores, axis=1), np.mean(v_scores, axis=1)+np.std(v_scores, axis=1), alpha=0.2)
+# plt.savefig(data_dir+'v_measure_noise.png')
 # plt.close()
 
-
+# a = np.array([h_scores, c_scores, v_scores])
+# np.save(data_dir+'all_scores_noise.npy', a)
 
 ft = time.time()
 print('Time taken:', ft-it)
+
+
 
     # wandb.log({
     #     'homogeneity': h, 

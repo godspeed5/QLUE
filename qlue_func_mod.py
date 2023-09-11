@@ -10,7 +10,7 @@ def distance(data_i, data_j):
     dy = data_i['y'] - data_j['y']
     return np.sqrt(dx**2 + dy**2)
 
-def calculateLocalDensity_classic_mod(dataset, tileDict, dc):
+def calculateLocalDensity_classic_mod(dataset, tileDict, dc, run_Grover = False):
     
     localDensities = list()
     tileIndices = tileDict.keys()
@@ -44,40 +44,45 @@ def calculateLocalDensity_classic_mod(dataset, tileDict, dc):
                             indices.append(k) #append the index of the point
                         elif(dist < 1e-8):
                             temp_rho += point['weight']
-        
-        fin_track = [ai.index(i) for i in indices]          # indices of the points that satisfy the condition
-        i_fin_track = [ai.index(i) for i in indices]        #copy of fin_tracK
+        if run_Grover:
+            fin_track = [ai.index(i) for i in indices]          # indices of the points that satisfy the condition
+            i_fin_track = [ai.index(i) for i in indices]        #copy of fin_tracK
 
-        # list of all possible tracksters (increase length if more than half the points satisfy the condition)
-        if len(fin_track)>=len(ai)//2:
-            apo = list(range(2*len(ai)+1))              
-        else:
-            apo = list(range(len(ai)))                  
-        b = []
-        a = Grover(apo, fin_track, Printing=False)
-        while a in fin_track:
-            fin_track.remove(a)
-            b.append(a)
+            # list of all possible tracksters (increase length if more than half the points satisfy the condition)
+            if len(fin_track)>=len(ai)//2:
+                apo = list(range(2*len(ai)+1))              
+            else:
+                apo = list(range(len(ai)))                  
+            b = []
             a = Grover(apo, fin_track, Printing=False)
-            print(fin_track)            
-        print(set(b)==set(i_fin_track))
-
+            while a in fin_track:
+                fin_track.remove(a)
+                b.append(a)
+                a = Grover(apo, fin_track, Printing=False)
+                # print(fin_track)            
+            print(set(b)==set(i_fin_track), i)
+        print(i)
         localDensities.append(temp_rho)
-    return localDensities
+    dataset['rho'] = np.array(localDensities)
+    return localDensities, dataset
 
-def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
+def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, delM, run_grover=False):
     
     NHlist = list()
     tileIndices = tileDict.keys()
+    Cnums = dict()
+    Cnum = 0
+    Onums = dict()
+    deltas = np.zeros(len(dataset))
     # print(dataset.head())
 
     # loop over all points
-    for i in range(len(dataset[0:20])):
+    for i in range(len(dataset)):
         temp_delta = math.inf
         NH_index = math.inf
         temp_rho = dataset['rho'][i] #initialize to the energy density of the point itself
         # get search box
-        search_box = searchBox(dataset.loc[i]['x'] - dm, dataset.loc[i]['x'] + dm, dataset.loc[i]['y'] - dm, dataset.loc[i]['y'] + dm)
+        search_box = searchBox(dataset.loc[i]['x'] - dm_in, dataset.loc[i]['x'] + dm_in, dataset.loc[i]['y'] - dm_in, dataset.loc[i]['y'] + dm_in)
         # loop over bins in the search box
         indices =[]
         ai = []
@@ -98,7 +103,7 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
                         # query N_{dc}(i)
                         dist = distance(dataset.loc[i], point)
                         # sum weights within N_{dc}(i)
-                        if((dist <= dm) and (point['rho'] > temp_rho)):
+                        if((dist <= dm_in) and (point['rho'] > temp_rho)):
                             if dist < temp_delta:
                                 temp_delta = dist
                                 NH_index = k #update nearest higher with current point
@@ -139,12 +144,50 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm, run_grover=False):
         # print(a, fin_track)
         if NHlist[-1]!=math.inf:
             print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
+        
+        if NH_index!=math.inf:
+            print(distance(dataset.loc[NH_index], dataset.loc[i]))
+            delta = distance(dataset.loc[NH_index], dataset.loc[i])
+            deltas[i] = delta
+            print(dataset['rho'][i], rho_c)
+        else:
+            delta = 999
+            deltas[i] = 999
+        if (delta > delC) and dataset['rho'][i] >= rho_c:
+            Cnum +=1
+            Cnums[i] = Cnum
+        if delta > delM and dataset['rho'][i] < rho_c:
+            Onums[i] = 1
+        # else:
 
-    return NHlist
+        print('Cnums: ', Cnums)
+        print('Onums: ', Onums)
+        # NHlist.append(NH_index)
+        print(len(NHlist))
+    dataset['NH'] = np.array(NHlist)
+    Clist = np.zeros(len(dataset))
+    Olist = np.zeros(len(dataset))
+    isSeed = np.zeros(len(dataset))
+    # deltas = np.zeros(len(dataset))
+    for i in Cnums:
+        Clist[i] = Cnums[i]
+        isSeed[i] = 1
+    for i in Onums:
+        Olist[i] = Onums[i]
+
+    print(Clist)
+    dataset['ClusterNumbers'] = Clist
+    if len(Onums) > 0:
+        dataset['isOutlier'] = Olist
+    dataset['isSeed'] = isSeed
+    dataset['delta'] = deltas
+    
+
+    return NHlist, dataset
 
 def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_c, delM, run_grover=False):
     # delta_c = dc
-
+    print('in nearest higher')
     NHlist = list()
     tileIndices = tileDict.keys()
     Cnums = dict()
@@ -459,7 +502,7 @@ def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write 
                         # print(binData.index)
                         for k, point in binData.iterrows(): # loop over all points in bin
                             # print('NH: ', point['NH'] == k_seed)
-                            if(k not in seeds and point['isOutlier']!=1): # if point is not a seed and is not an outlier
+                            if(k not in seeds and (not point['isOutlier'] if 'isOutlier' in point.keys() else True)): # if point is not a seed and is not an outlier
                                 ai.add(k) #append the index of the point to the list of points to search in
                                 if point['NH'] in cluster: # point is a follower of any of the points in cluster
                                     indices.add(k) # Append to the blackbox set for Grover
