@@ -77,7 +77,7 @@ sortpar = args.sortpar
 cq = args.cq
 output_dir = 'output_circles_num/'
 
-
+os.makedirs(output_dir, exist_ok=True)
 dists = [0,20,25,30,35,40,50,60,70,80,100, 120, 140]
 iters = 10
 h_scores = np.zeros((len(dists), iters))

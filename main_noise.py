@@ -79,6 +79,8 @@ sortpar = args.sortpar
 cq = args.cq
 output_dir = args.output_dir
 
+os.makedirs(output_dir, exist_ok=True)
+
 
 noise_sizes = [0,50,100,150,200,250,300,350,400,450,500]
 # dists=[100,200]
