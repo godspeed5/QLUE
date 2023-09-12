@@ -28,7 +28,7 @@ import seaborn as sns
 from scipy.stats import *
 from sklearn.metrics import *
 matplotlib.use('Agg')
-import wandb
+# wandb
 import time
 import glob
 # wandb.init(project='qlue_overlap')
@@ -78,15 +78,15 @@ cq = args.cq
 output_dir = 'output_circles_num/'
 
 os.makedirs(output_dir, exist_ok=True)
-dists = [0,20,25,30,35,40,50,60,70,80,100, 120, 140]
-iters = 10
+dists = [0,20,25,30,35,40,50,60,70,80,100,120,140]
+iters = 30
 h_scores = np.zeros((len(dists), iters))
 c_scores = np.zeros((len(dists), iters))
 v_scores = np.zeros((len(dists), iters))
 
 # dists=[100,200]
 it = time.time()
-prefactors = [1, 2,5,10,20]
+prefactors = [1,2,5,10,20]
 ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
 for pfi, prefactor_factor in enumerate(prefactors):
     if len(glob.glob(output_dir+'h_score_'+str(pfi)+'.npy')) == 0:
@@ -96,7 +96,7 @@ for pfi, prefactor_factor in enumerate(prefactors):
             for dist_index in range(len(dists)):
 
                 ##### Create Gaussian clusters #####
-                cova = np.array([[ 800,0],[0,800]])
+                cova = np.array([[900,0],[0,900]])
 
                 # print(wandb.config)
 
@@ -104,7 +104,7 @@ for pfi, prefactor_factor in enumerate(prefactors):
 
 
 
-                n_samples = [30, prefactor_factor*30]
+                n_samples = [500, prefactor_factor*500]
                 n_noise = 0
 
                 means = [[-dists[dist_index],0],[dists[dist_index],0]]

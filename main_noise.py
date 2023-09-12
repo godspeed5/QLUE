@@ -29,7 +29,7 @@ from scipy.stats import *
 from sklearn.metrics import *
 matplotlib.use('Agg')
 import time
-import wandb
+# import wandb
 import glob
 # wandb.init(project='qlue_overlap')
 
@@ -82,10 +82,10 @@ output_dir = args.output_dir
 os.makedirs(output_dir, exist_ok=True)
 
 
-noise_sizes = [0,50,100,150,200,250,300,350,400,450,500]
+noise_sizes = [0,50,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
 # dists=[100,200]
 it = time.time()
-iters = 25
+iters = 30
 sigmas = [1,5,10,100,1000]
 h_scores = np.zeros((len(noise_sizes), iters, len(sigmas)))
 # c_scores = np.zeros((len(noise_sizes), iters))
@@ -99,15 +99,13 @@ for n_sigma, sigma in enumerate(sigmas):
                 
                 # wandb.run=None
                 # run=wandb.init()
-                cova = np.array([[ sigma,0],[0,sigma]])
+                cova = np.array([[sigma,0],[0,sigma]])
 
                 # print(wandb.config)
 
                 # dist  =  wandb.config.dist
 
-
-
-                n_samples = [500]
+                n_samples = [750]
                 n_noise = noise_sizes[noise_index]
 
                 means = [[0,0]]
@@ -237,7 +235,7 @@ for n_sigma, sigma in enumerate(sigmas):
     else:
         print('Loading from file')
         h_scores = np.load(output_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy')          
-    plt.plot(noise_sizes/n_samples[0], np.mean(h_scores[:,:,n_sigma], axis=1), label='homogeneity')
+    plt.plot([i/n_samples[0] for i in noise_sizes], np.mean(h_scores[:,:,n_sigma], axis=1), label='homogeneity')
     plt.fill_between(noise_sizes, np.mean(h_scores[:,:,n_sigma], axis=1)-np.std(h_scores[:,:,n_sigma], axis=1), np.mean(h_scores[:,:,n_sigma], axis=1)+np.std(h_scores[:,:,n_sigma], axis=1), alpha=0.2)
     # plt.savefig(output_dir+'homogeneity_noise_sigma_'+str(sigma)+'.png')
     # plt.close()
