@@ -1,0 +1,9 @@
+def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_c, delM, run_grover=False)
+cal calculateNearestHigher_classic_mod_hard(dataset, tileDict, outlierDeltaFactor*dc, delC, phoC, delM)
+
+dc = window for nearest higher = 20 in original python Qlue and same here
+
+dm_in = tile size for nearest higher search (2*dc)
+delC = window for seed search = dc in principle. I used delC = dc/2 though
+rho_c = critical rho used for everything (phoC in main) = 25
+delM = outlier distance threshold = 10 in exp

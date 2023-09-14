@@ -80,13 +80,16 @@ cq = args.cq
 output_dir = args.output_dir
 
 os.makedirs(output_dir, exist_ok=True)
+n_samples = [750]
 
 
 noise_sizes = [0,50,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
+# noise_sizes = [250,300,350,400,450]
 # dists=[100,200]
 it = time.time()
-iters = 30
+iters = 1
 sigmas = [1,5,10,100,1000]
+# sigmas = [10,1000]
 h_scores = np.zeros((len(noise_sizes), iters, len(sigmas)))
 # c_scores = np.zeros((len(noise_sizes), iters))
 # v_scores = np.zeros((len(noise_sizes), iters))
@@ -105,7 +108,7 @@ for n_sigma, sigma in enumerate(sigmas):
 
                 # dist  =  wandb.config.dist
 
-                n_samples = [750]
+                
                 n_noise = noise_sizes[noise_index]
 
                 means = [[0,0]]
@@ -136,8 +139,8 @@ for n_sigma, sigma in enumerate(sigmas):
                 # Define variables and parameters needed by the algo
                 outlierDeltaFactor = 2
 
-                dc = 20
-                rhoc = 25
+                dc = 2*np.sqrt(sigma)/3
+                rhoc = 200
                 delM = outlierDeltaFactor*dc
                 # delM = dc
 
@@ -236,7 +239,7 @@ for n_sigma, sigma in enumerate(sigmas):
         print('Loading from file')
         h_scores = np.load(output_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy')          
     plt.plot([i/n_samples[0] for i in noise_sizes], np.mean(h_scores[:,:,n_sigma], axis=1), label='homogeneity')
-    plt.fill_between(noise_sizes, np.mean(h_scores[:,:,n_sigma], axis=1)-np.std(h_scores[:,:,n_sigma], axis=1), np.mean(h_scores[:,:,n_sigma], axis=1)+np.std(h_scores[:,:,n_sigma], axis=1), alpha=0.2)
+    plt.fill_between([i/n_samples[0] for i in noise_sizes], np.mean(h_scores[:,:,n_sigma], axis=1)-np.std(h_scores[:,:,n_sigma], axis=1), np.mean(h_scores[:,:,n_sigma], axis=1)+np.std(h_scores[:,:,n_sigma], axis=1), alpha=0.2)
     # plt.savefig(output_dir+'homogeneity_noise_sigma_'+str(sigma)+'.png')
     # plt.close()
 plt.xlabel('No. of noise samples/No. of cluster samples')
