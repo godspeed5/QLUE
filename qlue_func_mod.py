@@ -59,9 +59,9 @@ def calculateLocalDensity_classic_mod(dataset, tileDict, dc, run_Grover = False)
                 fin_track.remove(a)
                 b.append(a)
                 a = Grover(apo, fin_track, Printing=False)
-                # print(fin_track)            
-            print(set(b)==set(i_fin_track), i)
-        print(i)
+                # #print(fin_track)
+            ##print(set(b)==set(i_fin_track), i)
+        ##print(i)
         localDensities.append(temp_rho)
     dataset['rho'] = np.array(localDensities)
     return localDensities, dataset
@@ -74,7 +74,7 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, de
     Cnum = 0
     Onums = dict()
     deltas = np.zeros(len(dataset))
-    # print(dataset.head())
+    # #print(dataset.head())
 
     # loop over all points
     for i in range(len(dataset)):
@@ -95,7 +95,7 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, de
                     # get points indices in dataset
                     dataIdx = tileDict[binId]
                     binData = dataset.loc[dataIdx]
-                    # print(binData.head())
+                    # #print(binData.head())
 
                     # iterate inside this bin
                     for k, point in binData.iterrows():
@@ -128,10 +128,11 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, de
                 apo = list(range(len(ai)))
             a = Grover(apo, fin_track, Printing=False)
             if len(fin_track)!=0 and [a]!=fin_track:
-                print('error')
-                print(fin_track)
-                print(a)
-                print('error')
+                asasa=1
+                #print('error')
+                #print(fin_track)
+                #print(a)
+                #print('error')
         else:
             if len(fin_track) == 0:
                 a = math.inf
@@ -141,15 +142,17 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, de
             NHlist.append(ai[a])
         else:
             NHlist.append(math.inf)
-        # print(a, fin_track)
+        # #print(a, fin_track)
         if NHlist[-1]!=math.inf:
-            print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
+            sdff = 234
+            #print(temp_delta, distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]), temp_delta == distance(dataset.iloc[NHlist[-1]], dataset.iloc[i]))
+            asassa = 23
         
         if NH_index!=math.inf:
-            print(distance(dataset.loc[NH_index], dataset.loc[i]))
+            #print(distance(dataset.loc[NH_index], dataset.loc[i]))
             delta = distance(dataset.loc[NH_index], dataset.loc[i])
             deltas[i] = delta
-            print(dataset['rho'][i], rho_c)
+            #print(dataset['rho'][i], rho_c)
         else:
             delta = 999
             deltas[i] = 999
@@ -160,10 +163,10 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, de
             Onums[i] = 1
         # else:
 
-        print('Cnums: ', Cnums)
-        print('Onums: ', Onums)
+        ##print('Cnums: ', Cnums)
+        ##print('Onums: ', Onums)
         # NHlist.append(NH_index)
-        print(len(NHlist))
+        ##print(len(NHlist))
     dataset['NH'] = np.array(NHlist)
     Clist = np.zeros(len(dataset))
     Olist = np.zeros(len(dataset))
@@ -175,7 +178,7 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, de
     for i in Onums:
         Olist[i] = Onums[i]
 
-    print(Clist)
+    ##print(Clist)
     dataset['ClusterNumbers'] = Clist
     if len(Onums) > 0:
         dataset['isOutlier'] = Olist
@@ -187,18 +190,18 @@ def calculateNearestHigher_classic_mod(dataset, tileDict, dm_in, delC, rho_c, de
 
 def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_c, delM, run_grover=False):
     # delta_c = dc
-    print('in nearest higher')
+    ##print('in nearest higher')
     NHlist = list()
     tileIndices = tileDict.keys()
     Cnums = dict()
     Cnum = 0
     Onums = dict()
     deltas = np.zeros(len(dataset))
-    # print(dataset.head())
+    # #print(dataset.head())
 
     # loop over all points
     for i in range(len(dataset)):
-        print('point number: ', i)
+        ##print('point number: ', i)
         temp_delta = dm_in
         d_low = 0
         NH_index = math.inf
@@ -220,7 +223,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
                     # get points indices in dataset
                     dataIdx = tileDict[binId]
                     binData = dataset.loc[dataIdx]
-                    # print(binData.head())
+                    # #print(binData.head())
                     
                     for k, point in binData.iterrows():
                         ai.append(k)
@@ -232,16 +235,16 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
                                 VI.append(k)
                     # fin_track = [9]
                     # fin_track_new = [3]
-        print('points satisfying bb before while: ', VI)
+        #print('points satisfying bb before while: ', VI)
         c = 0 # X
         all_dists = [] # X
         justset = justhalf = -1
         while True: # X
-            # print('delta: ', temp_delta)
-            # print('d_low: ', d_low)
-            # print('VI: ', VI)
-            # print('justset: ', justset, 'justhalf: ', justhalf)
-            # print('---------------------------------')
+            # #print('delta: ', temp_delta)
+            # #print('d_low: ', d_low)
+            # #print('VI: ', VI)
+            # #print('justset: ', justset, 'justhalf: ', justhalf)
+            # ##print('---------------------------------')
             c+=1 # X
             fin_track = [ai.index(i) for i in VI]
             apo = list(range(2*len(ai)+1))
@@ -251,8 +254,8 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
             if k in fin_track:
                 
                 # for j in VI:
-                #     print(distance(dataset.loc[j], dataset.loc[ai[k]]))
-                #     print(dataset.loc[j])
+                #     ##print(distance(dataset.loc[j], dataset.loc[ai[k]]))
+                #     ##print(dataset.loc[j])
                 NH_index = k
                 fin_track.remove(k)
                 temp_delta = distance(dataset.loc[i], dataset.loc[ai[k]])
@@ -261,11 +264,11 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
                 
                 justset = 0 # X
                 justhalf = 1 # X
-                # print('delta in fin_track: ', temp_delta)
-                # print('d_low in fin_track: ', d_low)
+                # ##print('delta in fin_track: ', temp_delta)
+                # ##print('d_low in fin_track: ', d_low)
                 
-                # print('AI: ', ai)
-                # print('VI: ', VI)
+                # ##print('AI: ', ai)
+                # ##print('VI: ', VI)
             else:
                 
                 # break
@@ -273,19 +276,19 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
                 if c==1 or justset == 1:
                     if NH_index != math.inf:
                         NH_index = ai[NH_index]
-                    # print('dist: ', all_dists[-1], 'temp_delta: ', temp_delta)
-                    # print('VI: ', VI)
-                    print('NH: ', NH_index)
+                    # ##print('dist: ', all_dists[-1], 'temp_delta: ', temp_delta)
+                    # ##print('VI: ', VI)
+                    ##print('NH: ', NH_index)
                     
                     break
 
                 else:
-                    # print('justhalf: ', justhalf)
+                    # ##print('justhalf: ', justhalf)
                     justset = 1
                     justhalf = 0
                     d_low = temp_delta
-                    # print('VI: ', VI)
-                    # print('c: ', c)
+                    # ##print('VI: ', VI)
+                    # ##print('c: ', c)
                     temp_delta = all_dists[-1]
 
             
@@ -299,7 +302,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
                         # get points indices in dataset
                         dataIdx = tileDict[binId]
                         binData = dataset.loc[dataIdx]
-                        # print(binData.head())
+                        # ##print(binData.head())
                         
                         for k, point in binData.iterrows():
                             ai.append(k)
@@ -308,7 +311,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
                             
                             # sum weights within N_{dc}(i)
                             if point['rho'] > temp_rho:
-                                # print('dist: ', dist)
+                                # ##print('dist: ', dist)
                                 if dist < temp_delta and (dist>=d_low):
                                     VI.append(k)
         
@@ -323,21 +326,21 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
                         # get points indices in dataset
                         dataIdx = tileDict[binId]
                         binData = dataset.loc[dataIdx]
-                        # print(binData.head())
+                        # ##print(binData.head())
                         
                         for k, point in binData.iterrows():
                             if distance(dataset.loc[i], dataset.loc[NH_index]) == distance(point, dataset.loc[i]):
                                 if point['rho'] > dataset['rho'][NH_index]:
                                     NH_index = k
-                                    print('in final loop: ', NH_index)
+                                    ##print('in final loop: ', NH_index)
 
         
         
         if NH_index!=math.inf:
-            print(distance(dataset.loc[NH_index], dataset.loc[i]))
+            ##print(distance(dataset.loc[NH_index], dataset.loc[i]))
             delta = distance(dataset.loc[NH_index], dataset.loc[i])
             deltas[i] = delta
-            print(dataset['rho'][i], rho_c)
+            ##print(dataset['rho'][i], rho_c)
         else:
             delta = 999
             deltas[i] = 999
@@ -348,10 +351,10 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
             Onums[i] = 1
         # else:
 
-        print('Cnums: ', Cnums)
-        print('Onums: ', Onums)
+        ##print('Cnums: ', Cnums)
+        ##print('Onums: ', Onums)
         NHlist.append(NH_index)
-        # print(dms[-1])
+        # ##print(dms[-1])
     dataset['NH'] = NHlist
     Clist = np.zeros(len(dataset))
     Olist = np.zeros(len(dataset))
@@ -363,7 +366,7 @@ def calculateNearestHigher_classic_mod_hard(dataset, tileDict, dm_in, delC, rho_
     for i in Onums:
         Olist[i] = Onums[i]
 
-    print(Clist)
+    ##print(Clist)
     dataset['ClusterNumbers'] = Clist
     if len(Onums) > 0:
         dataset['isOutlier'] = Olist
@@ -378,7 +381,7 @@ def findAndAssign_clusters_classic(dataset): #TODO: write faster function with n
     # iterate inside this bin
     seeds = dataset[dataset['ClusterNumbers']!=0]
     
-    # print(seeds)
+    # ##print(seeds)
     for k_seed, point_seed in seeds.iterrows(): # loop over all seeds
         cluster = set([k_seed]) # list of points in cluster
         c = 1 # flag to check if cluster has changed
@@ -391,9 +394,9 @@ def findAndAssign_clusters_classic(dataset): #TODO: write faster function with n
             old_cluster = len(cluster) # copy of cluster
             
             for k, point in dataset.iterrows(): # loop over all points in bin
-                # print('before window check')
+                # ##print('before window check')
                 window_check = any([distance(dataset.loc[i], point) <= window_size for i in cluster]) # boolean to check if any point in cluster is within the opened windows
-                # print('after window check')
+                # ##print('after window check')
                 if(k not in seeds and point['isOutlier']!=1) and window_check: # if point is not a seed and is not an outlier and is within the opened windows
                     ai.add(k) #append the index of the point to the list of points to search in
                     if point['NH'] in cluster: # point is a follower of any of the points in cluster
@@ -401,16 +404,16 @@ def findAndAssign_clusters_classic(dataset): #TODO: write faster function with n
                         # if dataset['ClusterNumbers'].loc[k] != 0 and k not in seeds:
                         #     for i in cluster: #TODO: check merge logic
                         #         dataset['ClusterNumbers'].loc[i] = dataset['ClusterNumbers'].loc[k] #merge clusters
-                        #         print('merged')
+                        #         #print('merged')
                         dataset['ClusterNumbers'].loc[k] = point_seed['ClusterNumbers'] # assign cluster number to point
                         cluster.add(k) # add point to cluster
                         c=1 # set flag to 1
-            print(len(cluster))
+            #print(len(cluster))
             if len(cluster) == old_cluster:
                 c=0
-            print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
-            print('ai: ', len(ai), 'indices: ', len(indices))
-            print(all([(i in ai) for i in indices]))
+            #print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
+            #print('ai: ', len(ai), 'indices: ', len(indices))
+            #print(all([(i in ai) for i in indices]))
         
     return dataset
 
@@ -429,9 +432,9 @@ def findAndAssign_clusters_quantum(dataset):
             old_cluster = len(cluster) # copy of cluster
             
             for k, point in dataset.iterrows(): # loop over all points in bin
-                # print('before window check')
+                # #print('before window check')
                 window_check = any([distance(dataset.loc[i], point) <= window_size for i in cluster]) # boolean to check if any point in cluster is within the opened wondows
-                # print('after window check')
+                # #print('after window check')
                 if(point['ClusterNumbers']==0 and point['isOutlier']!=1) and window_check: # if point is not a seed and is not an outlier and is within the opened windows
                     ai.add(k) #append the index of the point to the list of points to search in
                     if point['NH'] in cluster: # point is a follower of any of the points in cluster
@@ -441,31 +444,31 @@ def findAndAssign_clusters_quantum(dataset):
                         fin_track = [ai_list.index(k)]
                         apo = list(range(2*len(ai)+1))
                         ans = Grover(apo, fin_track, Printing=False)
-                        print('k: ', k, 'ans: ', ans, 'ai[ans]: ', ai_list[ans])
+                        #print('k: ', k, 'ans: ', ans, 'ai[ans]: ', ai_list[ans])
                         cluster.add(ai_list[ans])
                         c=1 # set flag to 1
-            print(len(cluster))
+            #print(len(cluster))
             if len(cluster) == old_cluster:
                 c=0
             
-            print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
-            print('ai: ', len(ai), 'indices: ', len(indices))
-            print(all([(i in ai_list) for i in indices]))
+            #print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
+            #print('ai: ', len(ai), 'indices: ', len(indices))
+            #print(all([(i in ai_list) for i in indices]))
         
     return dataset
 
 def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write faster function with nearest higher search box
     # tileIndices = tileDict.keys()
-    print(dm_in)
+    #print(dm_in)
 
     # window_size = max([distance(dataset.loc[dataset['NH'].loc[i]], dataset.loc[i]) for i in range(len(dataset)) if dataset['NH'].loc[i]!=math.inf])+2
         
     # iterate inside this bin
     seeds = dataset[dataset['isSeed']!=0] # list of seeds in dataset
     tileIndices = tileDict.keys() # list of all tiles
-    print(seeds)
+    #print(seeds)
     
-    # print(seeds)
+    # #print(seeds)
     for k_seed, point_seed in seeds.iterrows(): # loop over all seeds
         cluster = set([k_seed]) # list of points in cluster
         c = 1 # flag to check if cluster has changed
@@ -480,9 +483,9 @@ def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write 
             for i in cluster:
                 search_boxes.append(searchBox(dataset.loc[i]['x'] - dm_in, dataset.loc[i]['x'] + dm_in, dataset.loc[i]['y'] - dm_in, dataset.loc[i]['y'] + dm_in)) # add search box to list
             curr_search_box = [min([i[0] for i in search_boxes]), max([i[1] for i in search_boxes]), min([i[2] for i in search_boxes]), max([i[3] for i in search_boxes])] # get current search box
-            print(curr_search_box)
-            # print('seed: ', dataset.loc[k_seed])
-            # print(search_boxes)
+            #print(curr_search_box)
+            # #print('seed: ', dataset.loc[k_seed])
+            # #print(search_boxes)
             # loop over bins in the search box
            
             # for i in range(len(search_boxes)): # loop over all search boxes            
@@ -490,18 +493,18 @@ def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write 
                 for yBin in range(curr_search_box[2], curr_search_box[3] + 1): # loop over all bins in search box
                     # get the id of this bin
                     binId = getGlobalBinByBin(xBin, yBin)
-                    # print(binId)
+                    # #print(binId)
                     # check if binId is in tileIndices
                     if(binId in tileIndices):
-                        # print('binId: ', binId)
+                        # #print('binId: ', binId)
                         # get points indices in dataset
                         dataIdx = tileDict[binId]
-                        # print('dataIdx: ', dataIdx)
+                        # #print('dataIdx: ', dataIdx)
                         binData = dataset.loc[dataIdx]
-                        # print(binData.head())
-                        # print(binData.index)
+                        # #print(binData.head())
+                        # #print(binData.index)
                         for k, point in binData.iterrows(): # loop over all points in bin
-                            # print('NH: ', point['NH'] == k_seed)
+                            # #print('NH: ', point['NH'] == k_seed)
                             if(k not in seeds and (not point['isOutlier'] if 'isOutlier' in point.keys() else True)): # if point is not a seed and is not an outlier
                                 ai.add(k) #append the index of the point to the list of points to search in
                                 if point['NH'] in cluster: # point is a follower of any of the points in cluster
@@ -510,11 +513,11 @@ def findAndAssign_clusters_classic_fast(dataset, tileDict, dm_in): #TODO: write 
                                     cluster.add(k) # add point to cluster
                                     c=1 # set flag to 1  
                 # exit()                  
-            print('cluster length: ', len(cluster))
+            #print('cluster length: ', len(cluster))
             if len(cluster) == old_cluster:
                 c=0
-            print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
-            print('ai: ', len(ai), 'indices: ', len(indices))
-            print(all([(i in ai) for i in indices]))
+            #print('k_seed: ', k_seed, 'c: ', c, 'a: ', a)
+            #print('ai: ', len(ai), 'indices: ', len(indices))
+            #print(all([(i in ai) for i in indices]))
         
     return dataset

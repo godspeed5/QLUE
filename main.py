@@ -215,7 +215,7 @@ for pfi, prefactor_factor in enumerate(prefactors):
                 
 
                 h_score,c_score,v_score = homogeneity_completeness_v_measure(dataset1['clusterId'].values, dataset1['ClusterNumbers'].values)
-                print(h_score, c_score, v_score)
+                #print(h_score, c_score, v_score)
                 h_scores[dist_index, iter] = h_score
                 c_scores[dist_index, iter] = c_score
                 v_scores[dist_index, iter] = v_score
