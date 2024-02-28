@@ -88,7 +88,7 @@ noise_sizes = [0,50,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
 # dists=[100,200]
 it = time.time()
 iters = 30
-sigmas = [1,5,10,100,1000]
+sigmas = [10000]#[1,100,1000,10000]
 # sigmas = [10,1000]
 h_scores = np.zeros((len(noise_sizes), iters, len(sigmas)))
 # c_scores = np.zeros((len(noise_sizes), iters))
@@ -219,7 +219,7 @@ for n_sigma, sigma in enumerate(sigmas):
                 
 
                 h_score,c_score,v_score = homogeneity_completeness_v_measure(dataset1['clusterId'].values, dataset1['ClusterNumbers'].values)
-                print(h_score, c_score, v_score)
+                #print(h_score, c_score, v_score)
                 h_scores[noise_index, iter,n_sigma] = h_score
 
                 sns.scatterplot(data=dataset1, x="x", y="y", hue="ClusterNumbers", palette="deep").set_title('Computed clusters')
@@ -236,7 +236,7 @@ for n_sigma, sigma in enumerate(sigmas):
 
         np.save(output_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy', h_scores)
     else:
-        print('Loading from file')
+        #print('Loading from file')
         h_scores = np.load(output_dir+'h_scores_noise_sigma_' + str(sigma) + '.npy')          
     plt.plot([i/n_samples[0] for i in noise_sizes], np.mean(h_scores[:,:,n_sigma], axis=1), label='homogeneity')
     plt.fill_between([i/n_samples[0] for i in noise_sizes], np.mean(h_scores[:,:,n_sigma], axis=1)-np.std(h_scores[:,:,n_sigma], axis=1), np.mean(h_scores[:,:,n_sigma], axis=1)+np.std(h_scores[:,:,n_sigma], axis=1), alpha=0.2)
@@ -281,7 +281,7 @@ plt.close()
 # np.save(data_dir+'all_scores_noise.npy', a)
 
 ft = time.time()
-print('Time taken:', ft-it)
+#print('Time taken:', ft-it)
 
 
 
