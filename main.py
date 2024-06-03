@@ -31,6 +31,7 @@ matplotlib.use('Agg')
 # wandb
 import time
 import glob
+from energy_weighted_clustering_metrics import my_homogeneity_completeness_v_measure
 # wandb.init(project='qlue_overlap')
 
 # Define sweep config
@@ -192,7 +193,7 @@ for pfi, prefactor_factor in enumerate(prefactors):
 
                 dataset1 = findAndAssign_clusters_classic_fast(dataset, tileDict, delM)
 
-                h_score,c_score,v_score = energy_aware_homogeneity_completeness_v_measure(dataset1['clusterId'].values, dataset1['ClusterNumbers'].values, energy=dataset1['weight'].values)
+                h_score,c_score,v_score = my_homogeneity_completeness_v_measure(dataset1['clusterId'].values, dataset1['ClusterNumbers'].values, energy=dataset1['weight'].values)
                 print(h_score, c_score, v_score)
                 h_scores[dist_index, iter] = h_score
                 c_scores[dist_index, iter] = c_score
