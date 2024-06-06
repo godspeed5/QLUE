@@ -89,7 +89,7 @@ v_scores = np.zeros((len(dists), iters))
 
 # dists=[100,200]
 it = time.time()
-prefactors = [1,2,5,10]
+prefactors = [1,2] #[1,2,5,10]
 ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
 for pfi, prefactor_factor in enumerate(prefactors):
     if len(glob.glob(output_dir+'h_score_'+str(pfi)+'.npy')) == 0:
@@ -226,7 +226,8 @@ for pfi, prefactor_factor in enumerate(prefactors):
     
 plt.xlabel('$N_{N}/N_{C}$')
 plt.ylabel('$\mathcal{F}$')
-plt.legend(['$\frac{N_1}{N_2}=$' + str(i) for i in prefactors])
+#plt.legend(['$\frac{N_1}{N_2}=$' + str(i) for i in prefactors])
+plt.legend(['$N_1 / N_2=$' + str(i) for i in prefactors])
 np.save(output_dir+'homogeneities_varied_energy.npy', ans)
 # plt.text(100,0, h_score)
 plt.savefig(output_dir+'homogeneity_varied_energy.png')
