@@ -89,7 +89,7 @@ v_scores = np.zeros((len(dists), iters))
 
 # dists=[100,200]
 it = time.time()
-prefactors = [2] #[1,2,5,10]
+prefactors = [5] #[1,2,5,10]
 ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
 for pfi, prefactor_factor in enumerate(prefactors):
     if len(glob.glob(output_dir+'h_score_'+str(prefactor_factor)+'.npy')) == 0:
