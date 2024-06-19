@@ -71,6 +71,7 @@ parser.add_argument('--sortpar', type=str, default='weight', help='weight or rho
 parser.add_argument('--cq', type=str, default='ch', help='classical or quantum or cheating')
 parser.add_argument('--output_dir', type=str, default='outputs/overlap_final/')
 
+
 args = parser.parse_args()
 
 # Set directory
@@ -80,7 +81,7 @@ cq = args.cq
 output_dir = args.output_dir
 
 os.makedirs(output_dir, exist_ok=True)
-dists = [0,20,25,30,35,40,50,60,70,80,100,120,140]
+dists = [60]#[0,20,25,30,35,40,50,60,70,80,100,120,140]
 
 iters = 30
 h_scores = np.zeros((len(dists), iters))
