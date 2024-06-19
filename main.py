@@ -69,7 +69,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='datasets/')
 parser.add_argument('--sortpar', type=str, default='weight', help='weight or rho')
 parser.add_argument('--cq', type=str, default='ch', help='classical or quantum or cheating')
-parser.add_argument('--output_dir', type=str, default='outputs/overlap/overlap1_60')
+parser.add_argument('--output_dir', type=str, default='outputs/overlap_final/')
+
 
 args = parser.parse_args()
 
@@ -92,7 +93,7 @@ it = time.time()
 prefactors = [5] #[1,2,5,10]
 ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
 for pfi, prefactor_factor in enumerate(prefactors):
-    if len(glob.glob(output_dir+'h_score_'+str(pfi)+'.npy')) == 0:
+    if len(glob.glob(output_dir+'h_score_'+str(prefactor_factor)+'.npy')) == 0:
 
         for iter in range(iters):
 
@@ -205,21 +206,21 @@ for pfi, prefactor_factor in enumerate(prefactors):
                 plt.ylim(-100,100)
                 plt.xlim(-100,100)
                 plt.text(-230,-230, '$\mathcal{F}_H= $'+ str(round(h_score,2)))
-                plt.savefig(output_dir+'/computed_clusters_'+str(dists[dist_index])+'_'+str(pfi)+'.svg')
+                plt.savefig(output_dir+'/computed_clusters_'+str(dists[dist_index])+'_'+str(prefactor_factor)+'.svg')
                 plt.close()
 
                 sns.scatterplot(data=dataset1, x="x", y="y", hue="clusterId", palette="deep").set_title('True clusters')
                 plt.legend([],[], frameon=False)
                 plt.text(-230,-230, '$\mathcal{F}_H= $'+ str(round(h_score,2)))
-                plt.savefig(output_dir + 'true_clusters_'+str(dists[dist_index])+'_'+str(pfi)+'.svg')
+                plt.savefig(output_dir + 'true_clusters_'+str(dists[dist_index])+'_'+str(prefactor_factor)+'.svg')
                 plt.close()
 
         print(h_scores.shape)
-        np.save(output_dir+'h_score_'+str(pfi)+'.npy', np.array(h_scores))
+        np.save(output_dir+'h_score_'+str(prefactor_factor)+'.npy', np.array(h_scores))
     else:
         print('Loading from file')
-        h_scores = np.load(output_dir+'h_score_'+str(pfi)+'.npy')
-    plt.plot(dists, np.mean(h_scores, axis=1), label='homogeneity_'+str((pfi)))
+        h_scores = np.load(output_dir+'h_score_'+str(prefactor_factor)+'.npy')
+    plt.plot(dists, np.mean(h_scores, axis=1), label='homogeneity_'+str((prefactor_factor)))
     plt.fill_between(dists, np.mean(h_scores, axis=1)-np.std(h_scores, axis=1), np.mean(h_scores, axis=1)+np.std(h_scores, axis=1), alpha=0.2)
     # plt.savefig(output_dir+'homogeneity_varied_energy_'+str(pfi)+'.png')
     ans[:,:,pfi] = np.array(h_scores)
