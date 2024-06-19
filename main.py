@@ -69,7 +69,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='datasets/')
 parser.add_argument('--sortpar', type=str, default='weight', help='weight or rho')
 parser.add_argument('--cq', type=str, default='ch', help='classical or quantum or cheating')
-parser.add_argument('--output_dir', type=str, default='outputs/overlap/')
+parser.add_argument('--output_dir', type=str, default='outputs/overlap/overlap1_60')
 
 args = parser.parse_args()
 
@@ -80,7 +80,7 @@ cq = args.cq
 output_dir = args.output_dir
 
 os.makedirs(output_dir, exist_ok=True)
-dists = [0,20,25,30,35,40,50,60,70,80,100,120,140]
+dists = [60]#[0,20,25,30,35,40,50,60,70,80,100,120,140]
 
 iters = 30
 h_scores = np.zeros((len(dists), iters))
@@ -89,7 +89,7 @@ v_scores = np.zeros((len(dists), iters))
 
 # dists=[100,200]
 it = time.time()
-prefactors = [1,2] #[1,2,5,10]
+prefactors = [5] #[1,2,5,10]
 ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
 for pfi, prefactor_factor in enumerate(prefactors):
     if len(glob.glob(output_dir+'h_score_'+str(pfi)+'.npy')) == 0:
