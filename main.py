@@ -32,44 +32,12 @@ matplotlib.use('Agg')
 import time
 import glob
 from energy_weighted_clustering_metrics import my_homogeneity_completeness_v_measure
-# wandb.init(project='qlue_overlap')
-
-# Define sweep config
-# sweep_configuration = {
-#     'method': 'grid',
-#     'name': 'sweep',
-#     'parameters': 
-#     {
-#     'dist': {'values': [0,20,40,60,80,100]}
-#     }
-# }
-
-# sweep_id = wandb.sweep(
-#     sweep=sweep_configuration
-#     )
-# run = wandb.init()   
-
-
-
-
-
-# if __name__ == "__main__":
-    
-### Create Gaussian clusters ###
-# semiMajorAxis =50
-# phi = 2*np.pi/3
-# semiMinorAxis = 10
-# varX1 = semiMajorAxis**2 * np.cos(phi)**2 + semiMinorAxis**2 * np.sin(phi)**2
-# varX2 = semiMajorAxis** 2 * np.sin(phi)**2 + semiMinorAxis**2 * np.cos(phi)**2
-# # cov12 = (semiMajorAxis**2 - semiMinorAxis**2) * np.sin(phi) * np.cos(phi) 
-# cov12 = (2*np.random.random() -1)*np.sqrt(varX1*varX2)
-# def main():
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='datasets/')
 parser.add_argument('--sortpar', type=str, default='weight', help='weight or rho')
 parser.add_argument('--cq', type=str, default='ch', help='classical or quantum or cheating')
-parser.add_argument('--output_dir', type=str, default='outputs/overlap_final/')
+parser.add_argument('--output_dir', type=str, default='outputs/overlap/plots3_nb/')
 
 
 args = parser.parse_args()
@@ -81,16 +49,16 @@ cq = args.cq
 output_dir = args.output_dir
 
 os.makedirs(output_dir, exist_ok=True)
-dists = [60]#[0,20,25,30,35,40,50,60,70,80,100,120,140]
+dists = [80]
 
-iters = 30
+iters = 1
 h_scores = np.zeros((len(dists), iters))
 c_scores = np.zeros((len(dists), iters))
 v_scores = np.zeros((len(dists), iters))
 
 # dists=[100,200]
 it = time.time()
-prefactors = [5] #[1,2,5,10]
+prefactors = [2]
 ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
 for pfi, prefactor_factor in enumerate(prefactors):
     if len(glob.glob(output_dir+'h_score_'+str(prefactor_factor)+'.npy')) == 0:
@@ -101,13 +69,6 @@ for pfi, prefactor_factor in enumerate(prefactors):
 
                 ##### Create Gaussian clusters #####
                 cova = np.array([[900,0],[0,900]])
-
-                # print(wandb.config)
-
-                # dist  =  wandb.config.dist
-
-
-
                 n_samples = [500, prefactor_factor*500]
                 n_noise = 0
 
@@ -130,8 +91,6 @@ for pfi, prefactor_factor in enumerate(prefactors):
 
                 ######### Read data #########
 
-
-
                 # Import the data for QLUE
                 qlue_data = pd.read_csv(data_dir+ 'gen_data_'+str(dists[dist_index])+'.csv')
                 # qlue_data = pd.read_csv(data_dir+ "dataset1.csv")
@@ -142,12 +101,9 @@ for pfi, prefactor_factor in enumerate(prefactors):
                 dc = 20
                 rhoc = 25
                 delM = outlierDeltaFactor*dc
-                # delM = dc
 
                 delC = dc
                 phoC = rhoc
-
-
 
                 # These variables can be modified and passed to functions in tiles.py
                 #tilesMaxX = 250
@@ -200,18 +156,18 @@ for pfi, prefactor_factor in enumerate(prefactors):
                 c_scores[dist_index, iter] = c_score
                 v_scores[dist_index, iter] = v_score
 
-                sns.scatterplot(data=dataset1, x="x", y="y", hue="ClusterNumbers", palette="deep").set_title('Computed clusters')
+                sns.scatterplot(data=dataset1, x="x", y="y", hue="ClusterNumbers", edgecolor = "none", palette="deep").set_title('Computed clusters')
                 plt.legend([],[], frameon=False)
-                plt.text(0,75,'score: ' + str(round(h_score, 2)))
+                # plt.text(0,75,'score: ' + str(round(h_score, 2)))
                 plt.ylim(-100,100)
-                plt.xlim(-100,100)
-                plt.text(-230,-230, '$\mathcal{F}_H= $'+ str(round(h_score,2)))
+                plt.xlim(-200,200)
+                plt.text(-180,-80, '$\mathcal{F}_H= $'+ str(round(h_score,2)))
                 plt.savefig(output_dir+'/computed_clusters_'+str(dists[dist_index])+'_'+str(prefactor_factor)+'.svg')
                 plt.close()
 
-                sns.scatterplot(data=dataset1, x="x", y="y", hue="clusterId", palette="deep").set_title('True clusters')
+                sns.scatterplot(data=dataset1, x="x", y="y", hue="clusterId", edgecolor = "none", palette="deep").set_title('True clusters')
                 plt.legend([],[], frameon=False)
-                plt.text(-230,-230, '$\mathcal{F}_H= $'+ str(round(h_score,2)))
+                plt.text(-180,-180, '$\mathcal{F}_H= $'+ str(round(h_score,2)))
                 plt.savefig(output_dir + 'true_clusters_'+str(dists[dist_index])+'_'+str(prefactor_factor)+'.svg')
                 plt.close()
 
@@ -220,18 +176,19 @@ for pfi, prefactor_factor in enumerate(prefactors):
     else:
         print('Loading from file')
         h_scores = np.load(output_dir+'h_score_'+str(prefactor_factor)+'.npy')
-    plt.plot(dists, np.mean(h_scores, axis=1), label='homogeneity_'+str((prefactor_factor)))
-    plt.fill_between(dists, np.mean(h_scores, axis=1)-np.std(h_scores, axis=1), np.mean(h_scores, axis=1)+np.std(h_scores, axis=1), alpha=0.2)
+    plt.plot([i/30 for i in dists[:10]], np.mean(h_scores[:10], axis=1), label='homogeneity_'+str((prefactor_factor)))
+    plt.fill_between([i/30 for i in dists[:10]], np.mean(h_scores[:10], axis=1)-np.std(h_scores[:10], axis=1), np.mean(h_scores[:10], axis=1)+np.std(h_scores[:10], axis=1), alpha=0.2)
     # plt.savefig(output_dir+'homogeneity_varied_energy_'+str(pfi)+'.png')
     ans[:,:,pfi] = np.array(h_scores)
     
 plt.xlabel('$N_{N}/N_{C}$')
 plt.ylabel('$\mathcal{F}$')
+# plt.xticks([0,0.5,1,1.5,2,2.5,3])
 #plt.legend(['$\frac{N_1}{N_2}=$' + str(i) for i in prefactors])
 plt.legend(['$N_1 / N_2=$' + str(i) for i in prefactors])
 np.save(output_dir+'homogeneities_varied_energy.npy', ans)
 # plt.text(100,0, h_score)
-plt.savefig(output_dir+'homogeneity_varied_energy.png')
+plt.savefig(output_dir+'homogeneity_varied_energy.svg')
 plt.close()
 
 ft = time.time()

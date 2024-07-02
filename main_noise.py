@@ -32,44 +32,12 @@ import time
 # import wandb
 import glob
 from energy_weighted_clustering_metrics import my_homogeneity_completeness_v_measure
-# wandb.init(project='qlue_overlap')
-
-# Define sweep config
-# sweep_configuration = {
-#     'method': 'grid',
-#     'name': 'sweep',
-#     'parameters': 
-#     {
-#     'dist': {'values': [0,20,40,60,80,100]}
-#     }
-# }
-
-# sweep_id = wandb.sweep(
-#     sweep=sweep_configuration
-#     )
-# run = wandb.init()   
-
-
-
-
-
-# if __name__ == "__main__":
-    
-### Create Gaussian clusters ###
-# semiMajorAxis =50
-# phi = 2*np.pi/3
-# semiMinorAxis = 10
-# varX1 = semiMajorAxis**2 * np.cos(phi)**2 + semiMinorAxis**2 * np.sin(phi)**2
-# varX2 = semiMajorAxis** 2 * np.sin(phi)**2 + semiMinorAxis**2 * np.cos(phi)**2
-# # cov12 = (semiMajorAxis**2 - semiMinorAxis**2) * np.sin(phi) * np.cos(phi) 
-# cov12 = (2*np.random.random() -1)*np.sqrt(varX1*varX2)
-# def main():
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='datasets/')
 parser.add_argument('--sortpar', type=str, default='weight', help='weight or rho')
 parser.add_argument('--cq', type=str, default='ch', help='classical or quantum or cheating')
-parser.add_argument('--output_dir', type=str, default='outputs/noise_sigma/', help='output directory')
+parser.add_argument('--output_dir', type=str, default='outputs/noise_sigma/plots2_nb/', help='output directory')
 
 
 args = parser.parse_args()
@@ -84,10 +52,10 @@ os.makedirs(output_dir, exist_ok=True)
 n_samples = [750]
 plt.rc('text', usetex=True)
 
-noise_sizes = [0,50,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
+noise_sizes = [250,750]
 it = time.time()
-iters = 30
-sigmas = [3, 10, 32]
+iters = 1
+sigmas = [10, 32]
 
 h_scores = np.zeros((len(noise_sizes), iters, len(sigmas)))
 for n_sigma, sigma in enumerate(sigmas):
@@ -121,12 +89,9 @@ for n_sigma, sigma in enumerate(sigmas):
                 dc = 20
                 rhoc = 25
                 delM = outlierDeltaFactor*dc
-                # delM = dc
 
                 delC = dc
                 phoC = rhoc
-
-
 
                 # These variables can be modified and passed to functions in tiles.py
                 #tilesMaxX = 250
@@ -181,15 +146,15 @@ for n_sigma, sigma in enumerate(sigmas):
     labelleft=False) # labels along the bottom edge are off)
 
 
-                sns.scatterplot(data=dataset1, x="x", y="y", hue="ClusterNumbers", palette="deep")
+                sns.scatterplot(data=dataset1, x="x", y="y", hue="ClusterNumbers", edgecolor = "none", palette="deep")
                 plt.legend([],[], frameon=False)
-                # plt.ylim(-200,200)
-                # plt.xlim(-200,200)
+                plt.ylim(-250,250)
+                plt.xlim(-250,250)
                 plt.text(-230,-230, '$\mathcal{F}_H= $'+ str(round(h_score,2)))
                 plt.savefig(output_dir+'computed_clusters_'+str(noise_sizes[noise_index])+'_sigma_' + str(sigma)+'.svg')
                 plt.close()
 
-                sns.scatterplot(data=dataset1, x="x", y="y", hue="clusterId", palette="deep").set_title('True clusters')
+                sns.scatterplot(data=dataset1, x="x", y="y", hue="clusterId", edgecolor = "none", palette="deep").set_title('True clusters')
                 plt.legend([],[], frameon=False)
                 plt.savefig(output_dir+'true_clusters_'+str(noise_sizes[noise_index])+'_sigma_' + str(sigma)+'.svg')
                 plt.close()
