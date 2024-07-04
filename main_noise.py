@@ -52,10 +52,10 @@ os.makedirs(output_dir, exist_ok=True)
 n_samples = [750]
 plt.rc('text', usetex=True)
 
-noise_sizes = [250,750]
+noise_sizes = [0,50,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
 it = time.time()
-iters = 1
-sigmas = [10, 32]
+iters = 30
+sigmas = [3, 10, 32]
 
 h_scores = np.zeros((len(noise_sizes), iters, len(sigmas)))
 for n_sigma, sigma in enumerate(sigmas):
