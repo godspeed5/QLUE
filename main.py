@@ -49,16 +49,15 @@ cq = args.cq
 output_dir = args.output_dir
 
 os.makedirs(output_dir, exist_ok=True)
-dists = [80]
+dists = [0,20,25,30,35,40,50,60,70,80,100,120,140]
 
-iters = 1
+iters = 30
 h_scores = np.zeros((len(dists), iters))
 c_scores = np.zeros((len(dists), iters))
 v_scores = np.zeros((len(dists), iters))
 
-# dists=[100,200]
 it = time.time()
-prefactors = [2]
+prefactors = [1,2,5,10]
 ans = np.zeros((h_scores.shape[0], h_scores.shape[1], len(prefactors)))
 for pfi, prefactor_factor in enumerate(prefactors):
     if len(glob.glob(output_dir+'h_score_'+str(prefactor_factor)+'.npy')) == 0:
